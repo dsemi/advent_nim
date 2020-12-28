@@ -5,6 +5,8 @@ import strutils
 import sugar
 import tables
 
+import "../utils"
+
 let dirs = {
   "e" : (1, -1),
   "se": (0, -1),
@@ -13,17 +15,6 @@ let dirs = {
   "nw": (0, 1),
   "ne": (1, 0),
 }.toTable
-
-type Coord = tuple
-  x: int
-  y: int
-
-proc `+`(p1: Coord, p2: Coord): Coord =
-  (p1.x + p2.x, p1.y + p2.y)
-
-proc `+=`(p1: var Coord, p2: Coord) =
-  p1.x += p2.x
-  p1.y += p2.y
 
 proc flipTiles(input: string): HashSet[Coord] =
   result = initHashSet[Coord]()

@@ -1,23 +1,20 @@
+import itertools
+import math
 import sequtils
 import strutils
 
 proc parse(input: string): seq[int64] =
   input.splitlines.map(parseBiggestInt)
 
-proc anySumTo(ns: seq[int64], n: int64): bool =
-  for i in ns.low .. ns.high:
-    for j in i+1 .. ns.high:
-      if ns[i] + ns[j] == n:
-        return true
-  false
-
 proc findFirstInvalid(ns: seq[int64]): int64 =
-  var n = 25
-  while true:
-    let slice = ns[n-25 ..< n]
-    if not anySumTo(slice, ns[n]):
+  for n in count(25):
+    var any = false
+    for combo in combinations(ns[n-25 ..< n], 2):
+      if combo.sum == ns[n]:
+        any = true
+        break
+    if not any:
       return ns[n]
-    n += 1
 
 proc part1*(input: string): int64 =
   findFirstInvalid(parse(input))

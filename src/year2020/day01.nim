@@ -1,17 +1,16 @@
+import itertools
+import math
 import sequtils
 import strutils
 
-proc part1*(input: string): int =
+proc solve(n: int, input: string): int =
   let ns = input.splitlines.map(parseInt)
-  for i in ns.low .. ns.high:
-    for j in i+1 .. ns.high:
-      if ns[i] + ns[j] == 2020:
-        return ns[i] * ns[j]
+  for combo in combinations(ns, n):
+    if combo.sum == 2020:
+      return combo.prod
+
+proc part1*(input: string): int =
+  solve(2, input)
 
 proc part2*(input: string): int =
-  let ns = input.splitlines.map(parseInt)
-  for i in ns.low .. ns.high:
-    for j in i+1 .. ns.high:
-      for k in j+1 .. ns.high:
-        if ns[i] + ns[j] + ns[k] == 2020:
-          return ns[i] * ns[j] * ns[k]
+  solve(3, input)
