@@ -7,10 +7,11 @@ import tables
 
 macro imports(s: static[string]): untyped =
   result = newStmtList()
-  for _, d in walkDir(".", relative=true):
-    if d.startswith("year"):
+  for _, d in walkDir("src"):
+    if d.rsplit('/', 1)[1].startswith("year"):
       for _, f in walkDir(d, relative=true):
         if f.startswith("day"):
+          let d = d[4 .. ^1]
           let module = fmt"{d}/{f[0 ..< ^4]}"
           let alias = module.replace("/", "")
           result.add(newNimNode(nnkImportStmt).add(infix(newIdentNode(module), "as", newIdentNode(alias))))
