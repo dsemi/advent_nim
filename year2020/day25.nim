@@ -15,4 +15,4 @@ proc part1*(input: string): int =
       return cardn
 
 proc part2*(input: string): string =
-  ""
+  nil
