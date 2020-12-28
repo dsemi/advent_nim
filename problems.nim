@@ -167,7 +167,7 @@ let probs* = {
     1: (wrap(year2020day01.part1), wrap(year2020day01.part2)),
     2: (wrap(year2020day02.part1), wrap(year2020day02.part2)),
     3: (wrap(year2020day03.part1), wrap(year2020day03.part2)),
-    # 4: (wrap(year2020day04.part1), wrap(year2020day04.part2)),
+    4: (wrap(year2020day04.part1), wrap(year2020day04.part2)),
     5: (wrap(year2020day05.part1), wrap(year2020day05.part2)),
     6: (wrap(year2020day06.part1), wrap(year2020day06.part2)),
     7: (wrap(year2020day07.part1), wrap(year2020day07.part2)),
