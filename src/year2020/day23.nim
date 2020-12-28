@@ -1,10 +1,8 @@
+import sequtils
 import strutils
-import sugar
 
 proc read(input:string, arr: var openArray[int]) =
-  var ns = collect(newSeq):
-    for n in input:
-      ($n).parseInt
+  var ns = input.mapIt(($it).parseInt)
   for n in 10 ..< arr.len:
     ns.add(n)
   arr[0] = ns[0]

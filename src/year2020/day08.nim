@@ -1,12 +1,13 @@
 import sets
 import strutils
 import sugar
+import unpack
 
 proc parse(input: string): seq[(string, int)] =
   result = collect(newSeq):
     for line in input.splitlines:
-      let w = line.split()
-      (w[0], w[1].parseInt)
+      [cmd, n] <- line.split()
+      (cmd, n.parseInt)
 
 proc run(prog: seq[(string, int)]): (int, bool) =
   var visited = initHashSet[int]()

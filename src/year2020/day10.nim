@@ -5,7 +5,7 @@ import strutils
 import tables
 
 proc parse(input: string): seq[int] =
-  result = input.splitlines.mapIt(it.parseInt).sorted
+  result = input.splitlines.map(parseInt).sorted
   result.insert(0, 0)
   result.add(result[^1] + 3)
 

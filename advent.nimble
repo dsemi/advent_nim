@@ -5,4 +5,4 @@ license     = "Unspecified"
 srcDir      = "src"
 bin         = @["main"]
 
-requires "nim >= 1.4.2"
+requires "nim >= 1.4.2", "unpack >= 0.4.0"

@@ -4,12 +4,13 @@ import sets
 import strutils
 import sugar
 import tables
+import unpack
 
 proc parse(input: string): seq[(seq[string], seq[string])] =
   result = collect(newSeq):
     for line in input.splitlines:
-      let parts = line.split(" (contains ")
-      (parts[0].split(), parts[1][0..^2].split(", "))
+      [ings, alls] <- line.split(" (contains ")
+      (ings.split(), alls[0..^2].split(", "))
 
 proc allergens(foods: seq[(seq[string], seq[string])]): Table[string, HashSet[string]] =
   result = initTable[string, HashSet[string]]()

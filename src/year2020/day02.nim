@@ -1,10 +1,12 @@
+import sequtils
 import strutils
+import unpack
 
 iterator parse(input: string): (int, int, char, string) =
   for line in input.splitlines:
-    let parts = line.split(" ")
-    let ns = parts[0].split("-")
-    yield (ns[0].parseInt, ns[1].parseInt, parts[1][0], parts[2])
+    [ns, c, str] <- line.split(" ")
+    [a, b] <- ns.split('-').map(parseInt)
+    yield (a, b, c[0], str)
 
 proc part1*(input: string): int =
   for (a, b, c, str) in parse(input):

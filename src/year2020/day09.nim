@@ -2,7 +2,7 @@ import sequtils
 import strutils
 
 proc parse(input: string): seq[int64] =
-  input.splitlines.mapIt(it.parseBiggestInt)
+  input.splitlines.map(parseBiggestInt)
 
 proc anySumTo(ns: seq[int64], n: int64): bool =
   for i in ns.low .. ns.high:
