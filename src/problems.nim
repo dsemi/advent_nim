@@ -70,9 +70,9 @@ let probs* = {
     20: (wrap(year2015day20.part1), wrap(year2015day20.part2)),
     # 21: (wrap(year2015day21.part1), wrap(year2015day21.part2)),
     # 22: (wrap(year2015day22.part1), wrap(year2015day22.part2)),
-    # 23: (wrap(year2015day23.part1), wrap(year2015day23.part2)),
-    # 24: (wrap(year2015day24.part1), wrap(year2015day24.part2)),
-    # 25: (wrap(year2015day25.part1), wrap(year2015day25.part2)),
+    23: (wrap(year2015day23.part1), wrap(year2015day23.part2)),
+    24: (wrap(year2015day24.part1), wrap(year2015day24.part2)),
+    25: (wrap(year2015day25.part1), wrap(year2015day25.part2)),
   }.toTable,
   2016: {
     1: (wrap(year2016day01.part1), wrap(year2016day01.part2)),

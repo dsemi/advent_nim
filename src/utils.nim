@@ -1,6 +1,9 @@
 import math
 import sequtils
 
+proc `//=`*(a: var SomeInteger, b: SomeInteger) =
+  a = a div b
+
 # Coordinates
 type Coord* = tuple
   x: int
