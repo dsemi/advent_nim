@@ -1,4 +1,4 @@
-import sets
+import intsets
 import strutils
 import sugar
 import unpack
@@ -10,7 +10,7 @@ proc parse(input: string): seq[(string, int)] =
       (cmd, n.parseInt)
 
 proc run(prog: seq[(string, int)]): (int, bool) =
-  var visited = initHashSet[int]()
+  var visited = initIntSet()
   var acc = 0
   var i = 0
   while 0 <= i and i < prog.len:
@@ -31,14 +31,17 @@ proc run(prog: seq[(string, int)]): (int, bool) =
 proc part1*(input: string): int =
   run(parse(input))[0]
 
+proc flip(cmd: var string) =
+  cmd = case cmd:
+          of "jmp": "nop"
+          of "nop": "jmp"
+          else: cmd
+
 proc part2*(input: string): int =
-  let progtmpl = parse(input)
-  for i in 0 .. progtmpl.high:
-    var prog = progtmpl
-    if prog[i][0] == "jmp":
-      prog[i][0] = "nop"
-    elif prog[i][0] == "nop":
-      prog[i][0] = "jmp"
+  var prog = parse(input)
+  for i in 0 .. prog.high:
+    flip(prog[i][0])
     let (ans, fin) = run(prog)
+    flip(prog[i][0])
     if fin:
       return ans

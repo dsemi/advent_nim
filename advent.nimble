@@ -5,4 +5,7 @@ license     = "Unspecified"
 srcDir      = "src"
 bin         = @["main"]
 
-requires "nim >= 1.4.2", "unpack >= 0.4.0", "itertools >= 0.4.0", "regex >= 0.18.0"
+requires "nim >= 1.4.2"
+requires "itertools >= 0.4.0"
+requires "regex >= 0.18.0"
+requires "unpack >= 0.4.0"

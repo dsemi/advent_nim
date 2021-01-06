@@ -19,6 +19,9 @@ proc `*`*(n: int, p: Coord): Coord =
 proc `*`*(p1: Coord, p2: Coord): Coord =
   (p1.x * p2.x - p1.y * p2.y, p1.x * p2.y + p1.y * p2.x)
 
+proc `*=`*(p1: var Coord, p2: Coord) =
+  (p1.x, p1.y) = (p1.x * p2.x - p1.y * p2.y, p1.x * p2.y + p1.y * p2.x)
+
 # Could add exp by squaring but likely not noticeable
 proc `^`*(p: Coord, n: int): Coord =
   if n == 1:
@@ -54,3 +57,18 @@ proc chineseRemainder*(an: seq[(int, int)]): int =
     let p = prod div n_i
     sum += a_i * mulInv(p, n_i) * p
   floorMod(sum, prod)
+
+proc transpose*[T](s: seq[seq[T]]): seq[seq[T]] =
+  result = newSeq[seq[T]](s[0].len)
+  for i in 0 ..< s[0].len:
+    result[i] = newSeq[T](s.len)
+    for j in 0 ..< s.len:
+      result[i][j] = s[j][i]
+
+# Closure iterator might be better here
+proc partitions*(n: int, t: int): seq[seq[int]] =
+  if n == 1:
+    return @[@[t]]
+  for x in 0..t:
+    for xs in partitions(n-1, t-x):
+      result.add(@[x] & xs)
