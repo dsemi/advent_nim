@@ -23,7 +23,7 @@ proc run(s: string, d: string): string =
     for line in s.splitlines:
       xy = foldl(line.mapIt($it), if t[b] + a in d: t[b] + a else: a, xy)
       d[xy]
-  digs.join("")
+  digs.join
 
 proc part1*(input: string): string =
   let d = """
