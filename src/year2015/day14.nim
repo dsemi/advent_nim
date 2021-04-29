@@ -9,7 +9,6 @@ import "../utils"
 
 proc parse(input: string): seq[seq[int]] =
   for line in input.splitlines:
-    let parts = line.split
     [speed, flyTime, restTime] <- findAll(line, re"\d+").map(parseInt)
     let period = repeat(speed, flyTime) & repeat(0, restTime)
     let full = collect(newSeq):

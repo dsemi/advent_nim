@@ -1,29 +1,27 @@
-import strutils
+import sequtils
 
-proc lookAndSay(s: string): string =
+proc lookAndSay(s: seq[char]): seq[char] =
   var curr = s[0]
   var cnt = 0
-  var outp = newSeq[string]()
   for c in s:
     if c == curr:
       cnt += 1
     else:
-      outp.add($cnt)
-      outp.add($curr)
+      result.add($cnt)
+      result.add(curr)
       curr = c
       cnt = 1
-  outp.add($cnt)
-  outp.add($curr)
-  join(outp, "")
+  result.add($cnt)
+  result.add(curr)
 
 proc part1*(input: string): int =
-  var s = input
+  var s = toSeq(input)
   for _ in 1..40:
     s = lookAndSay(s)
   s.len
 
 proc part2*(input: string): int =
-  var s = input
+  var s = toSeq(input)
   for _ in 1..50:
     s = lookAndSay(s)
   s.len

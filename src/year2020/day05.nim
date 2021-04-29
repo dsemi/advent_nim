@@ -1,4 +1,3 @@
-import algorithm
 import sequtils
 import strutils
 
@@ -11,7 +10,10 @@ proc part1*(input: string): int =
   seatIds(input).max
 
 proc part2*(input: string): int =
-  let ids = seatIds(input).sorted
-  for (a, b) in ids.zip(ids[1 .. ^1]):
-    if a + 2 == b:
-      return a + 1
+  let ids = seatIds(input)
+  var (mn, mx, tot) = (int.high, int.low, 0)
+  for id in ids:
+    mn = min(id, mn)
+    mx = max(id, mx)
+    tot += id
+  return ((mn + mx) * (ids.len + 1) div 2) - tot
