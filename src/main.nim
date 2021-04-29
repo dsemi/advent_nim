@@ -1,10 +1,12 @@
 import os
+import sequtils
 import strformat
 import strutils
 import sugar
 import tables
 import terminal
 import times
+import unpack
 
 import problems
 
@@ -17,12 +19,13 @@ proc colorizeTime(t: float): string =
   return ansiForegroundColorCode(fgRed) & s & ansiResetCode
 
 proc timeit(f: (string) -> string, inp: string): (string, float) =
-  let startT = cpuTime()
+  let startT = getTime()
   var ans = f(inp)
-  let endT = cpuTime()
+  let endT = getTime()
   if ans == "":
     ans = "Not implemented"
-  return (ans, endT - startT)
+  let t = endT - startT
+  return (ans, float(t.inMicroseconds) / 1_000_000)
 
 proc run(year: int, day: int): float =
   let contents = readFile(fmt"inputs/{year}/input{day}.txt").strip
@@ -39,7 +42,12 @@ proc run(year: int, day: int): float =
 
 let year = commandLineParams()[0].parseInt
 var total = 0.0
-for day in commandLineParams()[1 .. ^1]:
-  let day = day.parseInt
-  total += run(year, day)
+for daystr in commandLineParams()[1 .. ^1]:
+  let days = if "-" in daystr:
+               [a, b] <- daystr.split("-")
+               toSeq(a.parseInt .. b.parseInt)
+             else:
+               @[daystr.parseInt]
+  for day in days:
+    total += run(year, day)
 echo fmt"Total: {total:53.3f} seconds"
