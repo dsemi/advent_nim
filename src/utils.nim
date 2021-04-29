@@ -1,4 +1,6 @@
+import macros
 import math
+import options
 import sequtils
 
 proc `//=`*(a: var SomeInteger, b: SomeInteger) =
@@ -68,10 +70,37 @@ proc transpose*[T](s: seq[seq[T]]): seq[seq[T]] =
     for j in 0 ..< s.len:
       result[i][j] = s[j][i]
 
-# Closure iterator might be better here
-proc partitions*(n: int, t: int): seq[seq[int]] =
-  if n == 1:
-    return @[@[t]]
-  for x in 0..t:
-    for xs in partitions(n-1, t-x):
-      result.add(@[x] & xs)
+macro toItr*(x: ForLoopStmt): untyped =
+  ## Convert factory proc call for inline-iterator-like usage.
+  ## E.g.: ``for e in toItr(myFactory(parm)): echo e``.
+  let expr = x[0]
+  let call = x[1][1] # Get foo out of toItr(foo)
+  let body = x[2]
+  result = quote do:
+    block:
+      let itr = `call`
+      for `expr` in itr():
+        `body`
+
+proc partitions*(n: int, t: int): iterator(): seq[int] =
+  result = iterator(): seq[int] =
+    if n == 1:
+      yield @[t]
+    else:
+      for x in 0..t:
+        for xs in toItr(partitions(n-1, t-x)):
+          yield @[x] & xs
+
+proc lazy*[T](f: proc(): T): proc(): T =
+  var val= none(T)
+  result = proc(): T =
+               if val.isNone:
+                 val = some(f())
+               val.get
+
+type
+  EitherKind* = enum Left, Right
+  Either*[L, R] = object
+    case kind: EitherKind
+    of Left: left: L
+    of Right: right: R
