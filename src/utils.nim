@@ -92,15 +92,8 @@ proc partitions*(n: int, t: int): iterator(): seq[int] =
           yield @[x] & xs
 
 proc lazy*[T](f: proc(): T): proc(): T =
-  var val= none(T)
-  result = proc(): T =
-               if val.isNone:
-                 val = some(f())
-               val.get
-
-type
-  EitherKind* = enum Left, Right
-  Either*[L, R] = object
-    case kind: EitherKind
-    of Left: left: L
-    of Right: right: R
+  var val = none(T)
+  return proc(): T =
+           if val.isNone:
+             val = some(f())
+           val.get
