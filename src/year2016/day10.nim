@@ -1,46 +1,39 @@
 import algorithm
-import re
+import fusion/matching
+import sequtils
+import strformat
 import strutils
+import sugar
 import tables
 
-let
-  valreg = re"value (\d+) goes to (\w+ \d+)"
-  botreg = re"(\w+ \d+) gives low to (\w+ \d+) and high to (\w+ \d+)"
+import "../utils"
 
-type Bot = ref object
-  lo: string
-  hi: string
-  vals: seq[int]
+{.experimental: "caseStmtMacros".}
 
-proc recv(bot: var Bot, t: var Table[string, Bot], n: int) =
-  bot.vals.add(n)
-  if bot.vals.len == 2:
-    if t.hasKeyOrPut(bot.lo, Bot(vals: @[bot.vals.min])):
-      t[bot.lo].recv(t, bot.vals.min)
-    if t.hasKeyOrPut(bot.hi, Bot(vals: @[bot.vals.max])):
-      t[bot.hi].recv(t, bot.vals.max)
-
-proc runFactory(input: string): Table[string, Bot] =
-  var valInstrs: seq[string]
+proc runFactory(input: string): Table[string, seq[int]] =
+  var tbl: Table[string, seq[() -> int]]
   for line in input.splitlines:
-    var cap: array[3, string]
-    if match(line, botreg, cap):
-      result[cap[0]] = Bot(lo: cap[1], hi: cap[2])
-    else:
-      valInstrs.add(line)
-  for instr in valInstrs:
-    var cap: array[2, string]
-    doAssert match(instr, valreg, cap)
-    result[cap[1]].recv(result, cap[0].parseInt)
+    case line.splitWhitespace:
+      of ["bot", @n, _, _, _, @o1, @n1, _, _, _, @o2, @n2]:
+        capture n:
+          tbl.mgetOrPut(fmt"{o1} {n1}", @[]).add(lazy(() => tbl[fmt"bot {n}"].map(force).min))
+          tbl.mgetOrPut(fmt"{o2} {n2}", @[]).add(lazy(() => tbl[fmt"bot {n}"].map(force).max))
+      of ["value", @v, _, _, @o, @n]:
+        capture v:
+          tbl.mgetOrPut(fmt"{o} {n}", @[]).add(lazy(() => v.parseInt))
+      else:
+        raiseAssert fmt"Parse failed: {line}"
+  for (k, v) in tbl.pairs:
+    result[k] = v.map(force).sorted
 
 proc part1*(input: string): string =
   let tbl = runFactory(input)
-  for (k, bot) in tbl.pairs:
-    if bot.vals.sorted == @[17, 61]:
+  for (k, vals) in tbl.pairs:
+    if vals == @[17, 61]:
       return k.splitWhitespace[1]
 
 proc part2*(input: string): int =
   let tbl = runFactory(input)
-  tbl["output 0"].vals[0] *
-  tbl["output 1"].vals[0] *
-  tbl["output 2"].vals[0]
+  tbl["output 0"][0] *
+  tbl["output 1"][0] *
+  tbl["output 2"][0]

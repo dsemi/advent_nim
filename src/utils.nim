@@ -97,3 +97,5 @@ proc lazy*[T](f: proc(): T): proc(): T =
            if val.isNone:
              val = some(f())
            val.get
+
+proc force*[T](f: proc(): T): T = f()
