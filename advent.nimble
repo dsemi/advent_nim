@@ -5,6 +5,7 @@ license     = "Unspecified"
 srcDir      = "src"
 bin         = @["main"]
 
+requires "fusion >= 1.0"
 requires "nim >= 1.4.2"
 requires "itertools >= 0.4.0"
 requires "regex >= 0.18.0"
