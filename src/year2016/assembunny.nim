@@ -13,7 +13,7 @@ type
     of Val: v: int
 
   InstrKind = enum
-    Cpy, Inc, Dec, Jnz, Add, Mul, Nop
+    Cpy, Inc, Dec, Jnz, Tgl, Out, Add, Mul, Nop
 
   Instr = object
     kind: InstrKind
@@ -80,6 +80,10 @@ proc parseInstrs*(input: string): Prog =
         instrs.add(Instr(kind: Dec, a: x.parseReg))
       of ["jnz", @x, @y]:
         instrs.add(Instr(kind: Jnz, a: x.parseReg, b: y.parseReg))
+      of ["tgl", @x]:
+        instrs.add(Instr(kind: Tgl, a: x.parseReg))
+      of ["out", @x]:
+        instrs.add(Instr(kind: Out, a: x.parseReg))
   optimize(instrs)
   Prog(instrs: instrs)
 
@@ -89,7 +93,17 @@ proc val(prog: Prog, p: Param): int =
     of Reg: prog.reg[p.r]
     of Val: p.v
 
-proc run*(prog: var Prog) =
+proc toggle(instr: var Instr) =
+  case instr.kind:
+    of Cpy: instr.kind = Jnz
+    of Inc: instr.kind = Dec
+    of Dec: instr.kind = Inc
+    of Jnz: instr.kind = Cpy
+    of Tgl: instr.kind = Inc
+    else:
+      raiseAssert "Toggling invalid instruction"
+
+iterator runWithOutput*(prog: var Prog): int =
   while prog.ip >= 0 and prog.ip < prog.instrs.len:
     let instr = prog.instrs[prog.ip]
     case instr.kind:
@@ -102,6 +116,12 @@ proc run*(prog: var Prog) =
       of Jnz:
         if val(prog, instr.a) != 0:
           prog.ip += val(prog, instr.b) - 1
+      of Tgl:
+        let i = prog.ip + val(prog, instr.a)
+        if i >= 0 and i < prog.instrs.len:
+          prog.instrs[i].toggle
+      of Out:
+        yield val(prog, instr.a)
       of Add:
         prog.reg[instr.a.r] += prog.reg[instr.b.r]
         prog.reg[instr.b.r] = 0
@@ -112,3 +132,7 @@ proc run*(prog: var Prog) =
       of Nop:
         discard
     inc prog.ip
+
+proc run*(prog: var Prog) =
+  for _ in runWithOutput(prog):
+    discard
