@@ -1,3 +1,4 @@
+import httpclient
 import os
 import sequtils
 import strformat
@@ -9,6 +10,26 @@ import times
 import unpack
 
 import problems
+
+const fetchIntervalMs = 5000
+
+var lastCall: Time = getTime() - fetchIntervalMs.milliseconds
+proc downloadInput(url: string, outFile: string) =
+  let diff = int((getTime() - lastCall).inMilliseconds)
+  if diff < fetchIntervalMs:
+    sleep(fetchIntervalMs - diff)
+  let cookie = getEnv("AOC_SESSION")
+  var client = newHttpClient()
+  client.headers = newHttpHeaders({"Cookie": cookie})
+  downloadFile(client, url, outFile)
+  lastCall = getTime()
+
+proc getInput(year: int, day: int): string =
+  let inputFile = fmt"inputs/{year}/input{day}.txt"
+  if not fileExists(inputFile):
+    echo fmt"Downloading input for Year {year} Day {day}"
+    downloadInput(fmt"https://adventofcode.com/{year}/day/{day}/input", inputFile)
+  readFile(inputFile).strip
 
 proc colorizeTime(t: float): string =
   let s = fmt"{t:.3f}"
@@ -28,7 +49,7 @@ proc timeit(f: (string) -> string, inp: string): (string, float) =
   return (ans, float(t.inMicroseconds) / 1_000_000)
 
 proc run(year: int, day: int): float =
-  let contents = readFile(fmt"inputs/{year}/input{day}.txt").strip
+  let contents = getInput(year, day)
   echo fmt"Day {day}"
   let outstr = "Part $1: $2  Elapsed time $3 seconds"
   if year notin probs or day notin probs[year]:
