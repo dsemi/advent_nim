@@ -16,7 +16,7 @@ proc neighbors(n: int, pos: Coord): iterator: Coord =
       if pos.x >= 0 and pos.y >= 0:
         let x = pos.x
         let y = pos.y
-        if (x*x + 3*x + 2*x*y + y + y*y + n).popcount mod 2 == 0:
+        if (x*x + 3*x + 2*x*y + y + y*y + n).parityBits == 0:
           yield pos
 
 proc part1*(input: string): int =
