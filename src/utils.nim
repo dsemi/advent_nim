@@ -1,7 +1,10 @@
+import deques
 import macros
 import math
 import options
 import sequtils
+import sets
+import sugar
 
 proc `//=`*(a: var SomeInteger, b: SomeInteger) =
   a = a div b
@@ -99,3 +102,14 @@ proc lazy*[T](f: proc(): T): proc(): T =
            val.get
 
 proc force*[T](f: proc(): T): T = f()
+
+iterator bfs*[T](start: T, neighbors: T -> (iterator: T)): (int, T) =
+  var visited: HashSet[T]
+  var frontier = toDeque([(0, start)])
+  while frontier.len > 0:
+    let (d, st) = frontier.popFirst
+    yield (d, st)
+    for st2 in neighbors(st):
+      if st2 notin visited:
+        visited.incl(st2)
+        frontier.addLast((d+1, st2))

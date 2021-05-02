@@ -9,6 +9,8 @@ import sequtils
 import strutils
 import tables
 
+import "../utils"
+
 {.experimental: "caseStmtMacros".}
 
 type
@@ -56,42 +58,35 @@ iterator allMoves(elev: int, elev2: int, fls: seq[Pair]): seq[Pair] =
       fls2[i].gen = elev2
       yield fls2
 
-iterator neighbors(floors: Floors): Floors =
-  var neighbs: HashSet[Floors]
-  let
-    elev = floors.elev
-    flrs = floors.flrs
-  for e in [elev+1, elev-1]:
-    if e > 0 and e <= 4:
-      for flrs2 in allMoves(elev, e, flrs):
-        if flrs2.isValid:
-          let neighb = Floors(elev: e, flrs: flrs2.sorted)
-          if neighb notin neighbs:
-            neighbs.incl(neighb)
-            yield neighb
-        for flrs3 in allMoves(elev, e, flrs2):
-          if flrs3.isValid:
-            let neighb = Floors(elev: e, flrs: flrs3.sorted)
+proc neighbors(floors: Floors): iterator: Floors =
+  return iterator(): Floors =
+    var neighbs: HashSet[Floors]
+    let
+      elev = floors.elev
+      flrs = floors.flrs
+    for e in [elev+1, elev-1]:
+      if e > 0 and e <= 4:
+        for flrs2 in allMoves(elev, e, flrs):
+          if flrs2.isValid:
+            let neighb = Floors(elev: e, flrs: flrs2.sorted)
             if neighb notin neighbs:
               neighbs.incl(neighb)
               yield neighb
-
-proc bfs(start: Floors): int =
-  var visited: HashSet[Floors]
-  var frontier = toDeque([(0, start)])
-  while frontier.len > 0:
-    let (d, st) = frontier.popFirst
-    if st.isDone:
-      return d
-    for st2 in neighbors(st):
-      if st2 notin visited:
-        visited.incl(st2)
-        frontier.addLast((d+1, st2))
+          for flrs3 in allMoves(elev, e, flrs2):
+            if flrs3.isValid:
+              let neighb = Floors(elev: e, flrs: flrs3.sorted)
+              if neighb notin neighbs:
+                neighbs.incl(neighb)
+                yield neighb
 
 proc part1*(input: string): int =
-  input.parseFloors.bfs
+  for (d, st) in bfs(input.parseFloors, neighbors):
+    if st.isDone:
+      return d
 
 proc part2*(input: string): int =
   var floors = input.parseFloors
   floors.flrs = @[(1, 1), (1, 1)] & floors.flrs
-  floors.bfs
+  for (d, st) in bfs(floors, neighbors):
+    if st.isDone:
+      return d
