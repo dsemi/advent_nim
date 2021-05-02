@@ -104,7 +104,7 @@ proc lazy*[T](f: proc(): T): proc(): T =
 proc force*[T](f: proc(): T): T = f()
 
 iterator bfs*[T](start: T, neighbors: T -> (iterator: T)): (int, T) =
-  var visited: HashSet[T]
+  var visited = toHashSet([start])
   var frontier = toDeque([(0, start)])
   while frontier.len > 0:
     let (d, st) = frontier.popFirst
