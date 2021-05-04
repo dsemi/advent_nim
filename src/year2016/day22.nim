@@ -32,14 +32,12 @@ proc part1*(input: string): int =
 
 proc neighbors(grid: Table[Coord, Node], st: (Coord, Coord)): iterator: (Coord, Coord) =
   return iterator(): (Coord, Coord) =
-    var neighbs: HashSet[(Coord, Coord)]
     let (o, t) = st
     for d in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
       let o2 = o + d
       if o2 in grid and grid[o2].used <= 100:
         let next = (o2, if o2 == t: o else: t)
         yield next
-        neighbs.incl(next)
 
 proc part2*(input: string): int =
   let nodes = input.splitLines[2..^1].map(parseNode)
