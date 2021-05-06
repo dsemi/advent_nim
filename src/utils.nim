@@ -30,6 +30,14 @@ proc `*`*(p1: Coord, p2: Coord): Coord =
 proc `*=`*(p1: var Coord, p2: Coord) =
   (p1.x, p1.y) = (p1.x * p2.x - p1.y * p2.y, p1.x * p2.y + p1.y * p2.x)
 
+type Coord3* = tuple
+  x: int
+  y: int
+  z: int
+
+proc `+`*(p1: Coord3, p2: Coord3): Coord3 =
+  (p1.x + p2.x, p1.y + p2.y, p1.z + p2.z)
+
 # Could add exp by squaring but likely not noticeable
 proc `^`*(p: Coord, n: int): Coord =
   if n == 1:
