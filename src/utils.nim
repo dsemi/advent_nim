@@ -67,11 +67,12 @@ proc chineseRemainder*(an: seq[(int, int)]): int =
   floorMod(sum, prod)
 
 proc transpose*[T](s: seq[seq[T]]): seq[seq[T]] =
-  result = newSeq[seq[T]](s[0].len)
-  for i in 0 ..< s[0].len:
-    result[i] = newSeq[T](s.len)
+  let cols = s.mapIt(it.len).max
+  result = newSeq[seq[T]](cols)
+  for i in 0 ..< cols:
     for j in 0 ..< s.len:
-      result[i][j] = s[j][i]
+      if i < s[j].len:
+        result[i].add(s[j][i])
 
 macro toItr*(x: ForLoopStmt): untyped =
   ## Convert factory proc call for inline-iterator-like usage.
