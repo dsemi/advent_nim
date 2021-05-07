@@ -122,3 +122,8 @@ iterator bfs*[T](start: T, neighbors: T -> (iterator: T)): (int, T) =
       if st2 notin visited:
         visited.incl(st2)
         frontier.addLast((d+1, st2))
+
+proc seqToIter*[T](xs: seq[T]): iterator: T =
+  return iterator(): T =
+    for x in xs:
+      yield x
