@@ -23,4 +23,4 @@ proc part1*(input: string): int =
     n = n * factor mod md
 
 proc part2*(input: string): string =
-  nil
+  " "

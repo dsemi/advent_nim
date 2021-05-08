@@ -12,4 +12,4 @@ proc part1*(input: string): int =
   powMod(252533, index, 33554393) * 20151125 mod 33554393
 
 proc part2*(input: string): string =
-  nil
+  " "
