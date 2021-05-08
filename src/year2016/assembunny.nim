@@ -45,28 +45,26 @@ proc optimize(instrs: var seq[Instr]) =
       case instrs[i..i+5]:
         of [(kind: Cpy, a: @a, b: @d),
             (kind: Inc, a: @c),
-            (kind: Dec, a: @d2),
-            (kind: Jnz, a: @d3, b: (kind: Val, v: == -2)),
+            (kind: Dec, a: == d),
+            (kind: Jnz, a: == d, b: (kind: Val, v: == -2)),
             (kind: Dec, a: @b),
-            (kind: Jnz, a: @b2, b: (kind: Val, v: == -5))]:
-          if d == d2 and d == d3 and b == b2:
-            instrs[i] = Instr(kind: Mul, a: a, b: b, c: c, d: d)
-            instrs[i+1] = Instr(kind: Nop)
-            instrs[i+2] = Instr(kind: Nop)
-            instrs[i+3] = Instr(kind: Nop)
-            instrs[i+4] = Instr(kind: Nop)
-            instrs[i+5] = Instr(kind: Nop)
-            continue
+            (kind: Jnz, a: == b, b: (kind: Val, v: == -5))]:
+          instrs[i] = Instr(kind: Mul, a: a, b: b, c: c, d: d)
+          instrs[i+1] = Instr(kind: Nop)
+          instrs[i+2] = Instr(kind: Nop)
+          instrs[i+3] = Instr(kind: Nop)
+          instrs[i+4] = Instr(kind: Nop)
+          instrs[i+5] = Instr(kind: Nop)
+          continue
     if i + 3 <= instrs.len:
       case instrs[i..i+2]:
         of [(kind: Inc, a: @a),
             (kind: Dec, a: @b),
-            (kind: Jnz, a: @b2, b: (kind: Val, v: == -2))]:
-          if b == b2:
-            instrs[i] = Instr(kind: Add, a: a, b: b)
-            instrs[i+1] = Instr(kind: Nop)
-            instrs[i+2] = Instr(kind: Nop)
-            continue
+            (kind: Jnz, a: == b, b: (kind: Val, v: == -2))]:
+          instrs[i] = Instr(kind: Add, a: a, b: b)
+          instrs[i+1] = Instr(kind: Nop)
+          instrs[i+2] = Instr(kind: Nop)
+          continue
 
 proc parseInstrs*(input: string): Prog =
   var instrs: seq[Instr]
