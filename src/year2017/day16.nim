@@ -10,7 +10,7 @@ proc spin(n: int): proc(v: var string) =
 
 proc exchange(i, j: int): proc(v: var string) =
   return proc(v: var string) =
-    (v[j], v[i]) = (v[i], v[j])
+    swap(v[j], v[i])
 
 proc partner(a, b: char): proc(v: var string) =
   return proc(v: var string) =

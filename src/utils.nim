@@ -31,7 +31,12 @@ proc `*`*(p1: Coord, p2: Coord): Coord =
   (p1.x * p2.x - p1.y * p2.y, p1.x * p2.y + p1.y * p2.x)
 
 proc `*=`*(p1: var Coord, p2: Coord) =
-  (p1.x, p1.y) = (p1.x * p2.x - p1.y * p2.y, p1.x * p2.y + p1.y * p2.x)
+  p1 = p1 * p2
+
+iterator countup*(a, b: Coord): Coord =
+  for x in countup(a.x, b.x):
+    for y in countup(a.y, b.y):
+      yield (x, y)
 
 type Coord3* = tuple
   x: int

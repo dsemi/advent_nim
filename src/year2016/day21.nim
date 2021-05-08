@@ -6,7 +6,7 @@ import strutils
 {.experimental: "caseStmtMacros".}
 
 proc swap(s: var string, i, j: int) =
-  (s[i], s[j]) = (s[j], s[i])
+  swap(s[i], s[j])
 
 proc rotate(s: var string, i: int) =
   s = s[i..<s.len] & s[0..<i]

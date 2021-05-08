@@ -5,7 +5,7 @@ proc reverse[T](v: var openArray[T], lo: int, hi: int) =
   var lo = lo
   var hi = hi
   while lo < hi:
-    (v[lo mod v.len], v[hi mod v.len]) = (v[hi mod v.len], v[lo mod v.len])
+    swap(v[lo mod v.len], v[hi mod v.len])
     inc lo
     dec hi
 
