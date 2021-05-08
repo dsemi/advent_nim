@@ -9,6 +9,9 @@ import sugar
 proc `//=`*(a: var SomeInteger, b: SomeInteger) =
   a = a div b
 
+proc `%=`*(a: var SomeInteger, b: SomeInteger) =
+  a = floorMod(a, b)
+
 # Coordinates
 type Coord* = tuple
   x: int
@@ -37,6 +40,17 @@ type Coord3* = tuple
 
 proc `+`*(p1: Coord3, p2: Coord3): Coord3 =
   (p1.x + p2.x, p1.y + p2.y, p1.z + p2.z)
+
+proc `+=`*(p1: var Coord3, p2: Coord3) =
+  p1.x += p2.x
+  p1.y += p2.y
+  p1.z += p2.z
+
+proc abs*(p: Coord3): Coord3 =
+  (p.x.abs, p.y.abs, p.z.abs)
+
+proc sum*(p: Coord3): int =
+  p.x + p.y + p.z
 
 # Could add exp by squaring but likely not noticeable
 proc `^`*(p: Coord, n: int): Coord =

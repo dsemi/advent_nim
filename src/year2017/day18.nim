@@ -1,9 +1,10 @@
 import deques
 import fusion/matching
-import math
 import options
 import strutils
 import sugar
+
+import "../utils"
 
 {.experimental: "caseStmtMacros".}
 
@@ -49,7 +50,7 @@ proc run(s: var Sim, send: (int) -> void, recv: () -> Option[int]) =
       of Set: s.reg[instr.r] = instr.v(s)
       of Add: s.reg[instr.r] += instr.v(s)
       of Mul: s.reg[instr.r] *= instr.v(s)
-      of Mod: s.reg[instr.r] = floorMod(s.reg[instr.r], instr.v(s))
+      of Mod: s.reg[instr.r] %= instr.v(s)
       of Rcv:
         let v = recv()
         if v.isNone: break
