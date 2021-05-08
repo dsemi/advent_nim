@@ -33,6 +33,9 @@ proc `*`*(p1: Coord, p2: Coord): Coord =
 proc `*=`*(p1: var Coord, p2: Coord) =
   p1 = p1 * p2
 
+proc sum*(p: Coord): int =
+  p.x + p.y
+
 iterator countup*(a, b: Coord): Coord =
   for x in countup(a.x, b.x):
     for y in countup(a.y, b.y):
@@ -113,8 +116,8 @@ macro toItr*(x: ForLoopStmt): untyped =
       for `expr` in itr():
         `body`
 
-proc partitions*(n: int, t: int): iterator(): seq[int] =
-  result = iterator(): seq[int] =
+proc partitions*(n: int, t: int): iterator: seq[int] =
+  result = iterator: seq[int] =
     if n == 1:
       yield @[t]
     else:
