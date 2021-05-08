@@ -29,7 +29,7 @@ proc getInput(year: int, day: int): string =
   if not fileExists(inputFile):
     echo fmt"Downloading input for Year {year} Day {day}"
     downloadInput(fmt"https://adventofcode.com/{year}/day/{day}/input", inputFile)
-  readFile(inputFile).strip
+  readFile(inputFile).strip(leading = false)
 
 proc colorizeTime(t: float): string =
   let s = fmt"{t:.3f}"
