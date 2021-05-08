@@ -13,86 +13,73 @@ type
     line: int
     instrs: seq[Instr]
 
-  Instr = proc(reg: var Sim): bool
+  Val = (Sim) -> int
 
-proc parseInstrs(input: string, send: proc(x: int), recv: proc(): Option[int]): seq[Instr] =
+  InstrKind = enum
+    Snd, Set, Add, Mul, Mod, Rcv, Jgz
+
+  Instr = object
+    kind: InstrKind
+    r: char
+    v: Val
+    a: Val
+    b: Val
+
+proc val(v: string): Val =
+  (s: Sim) => (if v[0] in 'a'..'z': s.reg[v[0]] else: v.parseInt)
+
+proc parseInstrs(input: string): seq[Instr] =
   for line in input.splitLines:
-    let f = case line.splitWhitespace:
-              of ["snd", @v]:
-                capture v:
-                  (proc(s: var Sim): bool =
-                     let x = if v[0] in 'a'..'z': s.reg[v[0]] else: v.parseInt
-                     send(x))
-              of ["set", @r, @v]:
-                capture r, v:
-                  (proc(s: var Sim): bool =
-                     let x = if v[0] in 'a'..'z': s.reg[v[0]] else: v.parseInt
-                     s.reg[r[0]] = x)
-              of ["add", @r, @v]:
-                capture r, v:
-                  (proc(s: var Sim): bool =
-                     let x = if v[0] in 'a'..'z': s.reg[v[0]] else: v.parseInt
-                     s.reg[r[0]] += x)
-              of ["mul", @r, @v]:
-                capture r, v:
-                  (proc(s: var Sim): bool =
-                     let x = if v[0] in 'a'..'z': s.reg[v[0]] else: v.parseInt
-                     s.reg[r[0]] *= x)
-              of ["mod", @r, @v]:
-                capture r, v:
-                  (proc(s: var Sim): bool =
-                     let x = if v[0] in 'a'..'z': s.reg[v[0]] else: v.parseInt
-                     s.reg[r[0]] = floorMod(s.reg[r[0]], x))
-              of ["rcv", @r]:
-                capture r:
-                  (proc(s: var Sim): bool =
-                     let x = recv()
-                     if x.isNone:
-                       return true
-                     s.reg[r[0]] = x.get)
-              of ["jgz", @a, @b]:
-                capture a, b:
-                  (proc(s: var Sim): bool =
-                     let x = if a[0] in 'a'..'z': s.reg[a[0]] else: a.parseInt
-                     let y = if b[0] in 'a'..'z': s.reg[b[0]] else: b.parseInt
-                     if x > 0: s.line += y - 1)
-              else: raiseAssert "Parse error: " & line
-    result.add(f)
+    result.add(
+      case line.splitWhitespace:
+        of ["snd",     @v]: Instr(kind: Snd, v: val(v))
+        of ["set", @r, @v]: Instr(kind: Set, r: r[0], v: val(v))
+        of ["add", @r, @v]: Instr(kind: Add, r: r[0], v: val(v))
+        of ["mul", @r, @v]: Instr(kind: Mul, r: r[0], v: val(v))
+        of ["mod", @r, @v]: Instr(kind: Mod, r: r[0], v: val(v))
+        of ["rcv", @r    ]: Instr(kind: Rcv, r: r[0])
+        of ["jgz", @a, @b]: Instr(kind: Jgz, a: val(a), b: val(b))
+        else: raiseAssert "Parse error: " & line)
 
-proc run(s: var Sim) =
+proc run(s: var Sim, send: (int) -> void, recv: () -> Option[int]) =
   while s.line in s.instrs.low..s.instrs.high:
     let instr = s.instrs[s.line]
-    if instr(s):
-      break
+    case instr.kind:
+      of Snd: send(instr.v(s))
+      of Set: s.reg[instr.r] = instr.v(s)
+      of Add: s.reg[instr.r] += instr.v(s)
+      of Mul: s.reg[instr.r] *= instr.v(s)
+      of Mod: s.reg[instr.r] = floorMod(s.reg[instr.r], instr.v(s))
+      of Rcv:
+        let v = recv()
+        if v.isNone: break
+        s.reg[instr.r] = v.get
+      of Jgz:
+        let a = instr.a(s)
+        let b = instr.b(s)
+        if a > 0: s.line += b - 1
     s.line += 1
 
 proc part1*(input: string): int =
+  var s = Sim(instrs: input.parseInstrs)
   var v = 0
-  var s = Sim(instrs: input.parseInstrs(proc(x: int) = v = x,
-                                        proc(): Option[int] =
-                                          if v == 0:
-                                            return some(v)))
-  s.run
-  return v
+  s.run(proc(x: int) = v = x, () => (if v == 0: some(v) else: none(int)))
+  v
 
 proc part2*(input: string): int =
+  var s0 = Sim(instrs: input.parseInstrs)
+  var s1 = Sim(instrs: input.parseInstrs)
+  s1.reg['p'] = 1
   var q0: Deque[int]
   var q1: Deque[int]
-  var s0 = Sim(instrs: input.parseInstrs(proc(x: int) = q0.addLast(x),
-                                         proc(): Option[int] =
-                                            if q1.len > 0:
-                                              return some(q1.popFirst)))
   var p1Sends = 0
-  var s1 = Sim(instrs: input.parseInstrs(proc(x: int) =
-                                           inc p1Sends
-                                           q1.addLast(x),
-                                         proc(): Option[int] =
-                                           if q0.len > 0:
-                                             return some(q0.popFirst)))
-  s1.reg['p'] = 1
   var firstRun = true
   while firstRun or q0.len > 0 or q1.len > 0:
     firstRun = false
-    s0.run
-    s1.run
+    s0.run(proc(x: int) = q0.addLast(x),
+           () => (if q1.len > 0: some(q1.popFirst) else: none(int)))
+    s1.run(proc(x: int) =
+             inc p1Sends
+             q1.addLast(x),
+           () => (if q0.len > 0: some(q0.popFirst) else: none(int)))
   p1Sends
