@@ -24,6 +24,9 @@ proc `+=`*(p1: var Coord, p2: Coord) =
   p1.x += p2.x
   p1.y += p2.y
 
+proc `-`*(p1: Coord, p2: Coord): Coord =
+  (p1.x - p2.x, p1.y - p2.y)
+
 proc `*`*(n: int, p: Coord): Coord =
   (p.x * n, p.y * n)
 
@@ -32,6 +35,9 @@ proc `*`*(p1: Coord, p2: Coord): Coord =
 
 proc `*=`*(p1: var Coord, p2: Coord) =
   p1 = p1 * p2
+
+proc abs*(p: Coord): Coord =
+  (p.x.abs, p.y.abs)
 
 proc sum*(p: Coord): int =
   p.x + p.y
