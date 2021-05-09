@@ -1,7 +1,6 @@
-import nre
 import sequtils
+import strscans
 import strutils
-import unpack
 
 import "../utils"
 
@@ -10,9 +9,9 @@ type Claim = object
   rect: (Coord, Coord)
 
 proc parseClaims(input: string): seq[Claim] =
-  let reg = re"#(\d+) @ (\d+),(\d+): (\d+)x(\d+)"
   for line in input.splitLines:
-    [n, x, y, w, h] <- match(line, reg).get.captures.toSeq.mapIt(it.get.parseInt)
+    var n, x, y, w, h: int
+    doAssert line.scanf("#$i @ $i,$i: $ix$i", n, x, y, w, h)
     result.add(Claim(num: n, rect: ((x, y), (x+w-1, y+h-1))))
 
 proc coordFreq(claims: seq[Claim]): seq[seq[int]] =
