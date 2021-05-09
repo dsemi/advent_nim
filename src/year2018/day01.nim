@@ -1,6 +1,6 @@
 import math
+import intsets
 import sequtils
-import sets
 import strutils
 
 proc part1*(input: string): int =
@@ -9,7 +9,7 @@ proc part1*(input: string): int =
 proc part2*(input: string): int =
   let ns = input.splitLines.map(parseInt)
   var x = 0
-  var s: HashSet[int]
+  var s: IntSet
   for i in 0..int.high:
     if x in s:
       return x

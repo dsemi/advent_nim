@@ -1,6 +1,6 @@
 import deques
+import intsets
 import sequtils
-import sets
 import strutils
 import sugar
 import tables
@@ -20,8 +20,8 @@ proc part1*(input: string): int =
 
 proc part2*(input: string): int =
   let m = input.parsePipes
-  var seen: HashSet[int]
+  var seen: IntSet
   for n in m.keys:
     if n notin seen:
       inc result
-      seen.incl(toSeq(bfs(n, (n) => m[n].seqToIter)).mapIt(it[1]).toHashSet)
+      seen.incl(toSeq(bfs(n, (n) => m[n].seqToIter)).mapIt(it[1]).toIntSet)
