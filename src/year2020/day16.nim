@@ -1,6 +1,6 @@
-import re
 import sequtils
 import sets
+import strscans
 import strutils
 import sugar
 import unpack
@@ -9,12 +9,11 @@ type Rule = (string, seq[(int, int)])
 
 proc parse(input: string): (seq[Rule], seq[int], seq[seq[int]]) =
   [rules, yours, others] <- input.split("\n\n")
-  var arr: array[5, string]
   var rls = newSeq[Rule]()
   for line in rules.splitlines:
-    doAssert match(line, re"(.+): (\d+)-(\d+) or (\d+)-(\d+)", arr)
-    [name, *ns] <- arr
-    [a, b, c, d] <- toSeq(ns.map(parseInt))
+    var name: string
+    var a, b, c, d: int
+    doAssert line.scanf("$+: $i-$i or $i-$i", name, a, b, c, d)
     rls.add((name, @[(a, b), (c, d)]))
   let yrs = yours.splitlines()[^1].split(',').map(parseInt)
   let othrs = others.splitlines()[1 .. ^1].mapIt(it.split(',').map(parseInt))

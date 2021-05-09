@@ -165,6 +165,6 @@ iterator combos2*[T](xs: seq[T]): (T, T) =
 # Scanf utils
 
 proc c*(input: string, charVal: var char, start: int): int =
-  if start+1 < input.len:
+  if start+1 <= input.len:
     charVal = input[start]
     return 1

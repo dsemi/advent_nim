@@ -8,7 +8,7 @@ import unpack
 proc parse(input: string): Table[string, seq[(int, string)]] =
   result = initTable[string, seq[(int, string)]]()
   for line in input.splitlines:
-    let bgs = findAll(line, re"(\d+ )?\w+ \w+ bags?")
+    let bgs = line.findAll(re"(\d+ )?\w+ \w+ bags?")
     var vs = collect(newSeq):
       for x in bgs[1 .. ^1]:
         if "no other" notin x:

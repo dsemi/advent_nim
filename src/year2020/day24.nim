@@ -18,7 +18,7 @@ let dirs = {
 
 proc flipTiles(input: string): HashSet[Coord] =
   result = initHashSet[Coord]()
-  let m = re(join(toSeq(dirs.keys), "|"))
+  let m = toSeq(dirs.keys).join("|").re
   for line in input.splitlines:
     var coord = (0, 0)
     for d in findAll(line, m):

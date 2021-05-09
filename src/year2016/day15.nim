@@ -8,7 +8,7 @@ import strutils
 import "../utils"
 
 proc parseDisc(line: string): (int, int) =
-  case findAll(line, re"\d+").map(parseInt):
+  case line.findAll(re"\d+").map(parseInt):
     of [@discNum, @modulo, _, @pos]:
       (-pos - discNum, modulo)
     else:

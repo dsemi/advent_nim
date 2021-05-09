@@ -1,37 +1,30 @@
-import re
 import sets
 import sequtils
+import strscans
 import strutils
 import sugar
-import unpack
 
 import "../utils"
 
-let
+const
   w = 50
   h = 6
-  rect = re"rect (\d+)x(\d+)"
-  rotateR = re"rotate row y=(\d+) by (\d+)"
-  rotateC = re"rotate column x=(\d+) by (\d+)"
 
 proc processInstr(grid: var HashSet[Coord], line: string) =
-  var cap: array[2, string]
-  if match(line, rect, cap):
-    [width, height] <- cap.map(parseInt)
-    for c in 0..<width:
-      for r in 0..<height:
+  var a, b: int
+  if line.scanf("rect $ix$i", a, b):
+    for c in 0..<a:
+      for r in 0..<b:
         grid.incl((r, c))
-  elif match(line, rotateR, cap):
-    [row, amt] <- cap.map(parseInt)
+  elif line.scanf("rotate row y=$i by $i", a, b):
     grid = collect(initHashSet):
       for (r, c) in grid:
-        {(r, if r == row: (c + amt) mod w else: c)}
+        {(r, if r == a: (c + b) mod w else: c)}
   else:
-    doAssert match(line, rotateC, cap)
-    [col, amt] <- cap.map(parseInt)
+    doAssert line.scanf("rotate column x=$i by $i", a, b)
     grid = collect(initHashSet):
       for (r, c) in grid:
-        {((if c == col: (r + amt) mod h else: r), c)}
+        {((if c == a: (r + b) mod h else: r), c)}
 
 proc litPixels(input: string): HashSet[Coord] =
   for line in input.splitLines:

@@ -1,15 +1,12 @@
 import deques
-import re
 import sequtils
 import sets
+import strscans
 import strutils
 import sugar
 import tables
-import unpack
 
 import "../utils"
-
-let reg = re"/dev/grid/node-x(\d+)-y(\d+)\s+(\d+)T\s+(\d+)T\s+(\d+)T\s+(\d+)%"
 
 type Node = tuple
   coord: Coord
@@ -17,9 +14,9 @@ type Node = tuple
   avail: int
 
 proc parseNode(line: string): Node =
-  var cap: array[6, string]
-  doAssert match(line, reg, cap), line
-  [x, y, _, used, avail, _] <- cap.map(parseInt)
+  var x, y, size, used, avail, usedp: int
+  doAssert line.scanf("/dev/grid/node-x$i-y$i$s$iT$s$iT$s$iT$s$i%",
+                      x, y, size, used, avail, usedp)
   (coord: (x, y), used: used, avail: avail)
 
 proc part1*(input: string): int =

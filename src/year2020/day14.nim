@@ -1,6 +1,6 @@
 import itertools
-import re
 import sequtils
+import strscans
 import strutils
 import sugar
 import tables
@@ -8,9 +8,9 @@ import tables
 iterator parse(input: string): (string, int, int) =
   var mask: string
   for line in input.splitlines:
-    var arr: array[2, string]
-    if re.match(line, re"mem\[(\d+)\] = (\d+)", arr):
-      yield (mask, arr[0].parseInt, arr[1].parseInt)
+    var r, v: int
+    if line.scanf("mem[$i] = $i", r, v):
+      yield (mask, r, v)
     else:
       mask = line.split()[^1]
 

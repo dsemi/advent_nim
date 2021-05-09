@@ -1,6 +1,6 @@
 import fusion/matching
-import re
 import options
+import re
 import strutils
 import sugar
 

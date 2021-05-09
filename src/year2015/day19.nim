@@ -34,7 +34,7 @@ proc part2*(input: string): int =
   var repsM: Table[string, string]
   for (k, v) in reps:
     repsM[v.reversed.join] = k.reversed.join
-  let regex = re(toSeq(repsM.keys).join("|"))
+  let regex = toSeq(repsM.keys).join("|").re
   while molecule != "e":
     molecule = replace(molecule, regex, (m, s) => repsM[s[m.boundaries]], 1)
     result += 1

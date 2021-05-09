@@ -1,11 +1,12 @@
-import re
+import fusion/matching
 import strformat
 import strutils
 import sugar
 import tables
-import unpack
 
 import "../utils"
+
+{.experimental: "caseStmtMacros".}
 
 proc parseWires(input: string): Table[string, () -> uint16] =
   var tbl: Table[string, () -> uint16]
@@ -14,24 +15,20 @@ proc parseWires(input: string): Table[string, () -> uint16] =
       return uint16(x.parseInt)
     except ValueError:
      return tbl[x]()
-  let reg = re"(?:((\w+) (AND|OR|LSHIFT|RSHIFT)|NOT) )?(\w+) -> (\w+)"
   for line in input.splitlines:
-    var caps: array[5, string]
-    doAssert match(line, reg, caps)
-    [aop, a, op, b, v] <- caps
-    capture a, b:
-      if aop == "":
-        tbl[v] = lazy(() => val(b))
-      elif aop == "NOT":
-        tbl[v] = lazy(() => not val(b))
-      elif op == "AND":
-        tbl[v] = lazy(() => val(a) and val(b))
-      elif op == "OR":
-        tbl[v] = lazy(() => val(a) or val(b))
-      elif op == "LSHIFT":
-        tbl[v] = lazy(() => val(a) shl val(b))
-      elif op == "RSHIFT":
-        tbl[v] = lazy(() => val(a) shr val(b))
+    case line.splitWhitespace:
+      of [@b, "->", @v]:
+        capture b: tbl[v] = lazy(() => val(b))
+      of ["NOT", @b, "->", @v]:
+        capture b: tbl[v] = lazy(() => not val(b))
+      of [@a, "AND", @b, "->", @v]:
+        capture a, b: tbl[v] = lazy(() => val(a) and val(b))
+      of [@a, "OR", @b, "->", @v]:
+        capture a, b: tbl[v] = lazy(() => val(a) or val(b))
+      of [@a, "LSHIFT", @b, "->", @v]:
+        capture a, b: tbl[v] = lazy(() => val(a) shl val(b))
+      of [@a, "RSHIFT", @b, "->", @v]:
+        capture a, b: tbl[v] = lazy(() => val(a) shr val(b))
   tbl
 
 proc part1*(input: string): uint16 =
