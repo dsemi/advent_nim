@@ -161,3 +161,10 @@ iterator combos2*[T](xs: seq[T]): (T, T) =
   for i in xs.low..xs.high:
     for j in i+1..xs.high:
       yield (xs[i], xs[j])
+
+# Scanf utils
+
+proc c*(input: string, charVal: var char, start: int): int =
+  if start+1 < input.len:
+    charVal = input[start]
+    return 1
