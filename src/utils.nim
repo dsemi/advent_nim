@@ -1,4 +1,5 @@
 import deques
+import lists
 import macros
 import math
 import options
@@ -182,3 +183,39 @@ proc c*(input: string, charVal: var char, start: int): int =
   if start+1 <= input.len:
     charVal = input[start]
     return 1
+
+type CircularList[T] = ref object
+  focus: DoublyLinkedNode[T]
+  size: int
+
+proc initCircularList*[T](v: T): CircularList[T] =
+  let node = newDoublyLinkedNode[T](v)
+  node.prev = node
+  node.next = node
+  CircularList[T](focus: node, size: 1)
+
+proc moveLeft*[T](list: var CircularList[T], n: Natural) {.inline.} =
+  for _ in 1..n:
+    list.focus = list.focus.prev
+
+proc moveRight*[T](list: var CircularList[T], n: Natural) {.inline.} =
+  for _ in 1..n:
+    list.focus = list.focus.next
+
+proc insert*[T](list: var CircularList[T], v: T) {.inline.} =
+  var node = newDoublyLinkedNode[T](v)
+  node.next = list.focus.next
+  node.prev = list.focus
+  node.next.prev = node
+  node.prev.next = node
+  list.focus = node
+  inc list.size
+
+proc pop*[T](list: var CircularList[T]): T {.inline.} =
+  assert list.size > 0
+  result = list.focus.value
+  let node = list.focus
+  list.focus = node.next
+  node.prev.next = list.focus
+  list.focus.prev = node.prev
+  dec list.size
