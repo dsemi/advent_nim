@@ -162,6 +162,20 @@ iterator combos2*[T](xs: seq[T]): (T, T) =
     for j in i+1..xs.high:
       yield (xs[i], xs[j])
 
+type Tree*[T] = ref object
+  val*: T
+  children*: seq[Tree[T]]
+
+proc map*[T, S](t: Tree[T], f: proc(x: T): S {.closure.}): Tree[S] {.inline.} =
+  Tree[S](val: f(t.val),
+          children: t.children.mapIt(it.map(f)))
+
+proc fold*[T](t: Tree[T], f: proc(a: T, b: T): T {.closure.}, init: T): T {.inline.} =
+  f(t.val, t.children.mapIt(it.fold(f, init)).foldl(f(a, b), init))
+
+proc sum*(t: Tree[SomeInteger]): SomeInteger {.inline.} =
+  t.val + t.children.mapIt(it.sum).sum
+
 # Scanf utils
 
 proc c*(input: string, charVal: var char, start: int): int =
