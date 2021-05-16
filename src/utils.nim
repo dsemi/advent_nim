@@ -64,11 +64,32 @@ proc `+=`*(p1: var Coord3, p2: Coord3) =
   p1.y += p2.y
   p1.z += p2.z
 
+proc `-`*(c: Coord3): Coord3 =
+  (-c.x, -c.y, -c.z)
+
+proc `-`*(p1: Coord3, p2: Coord3): Coord3 =
+  (p1.x - p2.x, p1.y - p2.y, p1.z - p2.z)
+
+proc `*`*(n: int, p: Coord3): Coord3 =
+  (p.x * n, p.y * n, p.z * n)
+
+proc `div`*(c: Coord3, n: int): Coord3 =
+  (c.x div n, c.y div n, c.z div n)
+
+proc floorDiv*(c: Coord3, n: int): Coord3 =
+  (floorDiv(c.x, n), floorDiv(c.y, n), floorDiv(c.z, n))
+
 proc abs*(p: Coord3): Coord3 =
   (p.x.abs, p.y.abs, p.z.abs)
 
 proc sum*(p: Coord3): int =
   p.x + p.y + p.z
+
+iterator countup*(a, b: Coord3): Coord3 =
+  for x in countup(a.x, b.x):
+    for y in countup(a.y, b.y):
+      for z in countup(a.z, b.z):
+        yield (x, y, z)
 
 # Could add exp by squaring but likely not noticeable
 proc `^`*(p: Coord, n: int): Coord =
