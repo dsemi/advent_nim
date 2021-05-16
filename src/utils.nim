@@ -1,4 +1,6 @@
+import algorithm
 import deques
+import heapqueue
 import lists
 import macros
 import math
@@ -6,6 +8,7 @@ import options
 import sequtils
 import sets
 import sugar
+import tables
 
 proc `//=`*(a: var SomeInteger, b: SomeInteger) =
   a = a div b
@@ -151,6 +154,34 @@ iterator bfs*[T](start: T, neighbors: T -> (iterator: T)): (int, T) =
       if st2 notin visited:
         visited.incl(st2)
         frontier.addLast((d+1, st2))
+
+proc aStar*[T](neighbors: T -> (iterator: T), dist: (T, T) -> int, heur: T -> int, goal, start: T): seq[T] =
+  var visited = [start].toHashSet
+  var queue = [(0, start)].toHeapQueue
+  var cameFrom: Table[T, T]
+  var gScore: Table[T, int]
+  gScore[start] = 0
+  var fScore: Table[T, int]
+  fScore[start] = heur(start)
+  var x = 0
+  while queue.len > 0:
+    let (_, st) = queue.pop
+    if st == goal:
+      result = @[st]
+      while result[^1] in cameFrom:
+        result.add(cameFrom[result[^1]])
+      result.reverse
+      break
+    visited.excl(st)
+    for st2 in neighbors(st):
+      let tentGScore = gScore.getOrDefault(st, int.high) + dist(st, st2)
+      if tentGScore < gScore.getOrDefault(st2, int.high):
+        cameFrom[st2] = st
+        gScore[st2] = tentGScore
+        fScore[st2] = gScore[st2] + heur(st2)
+        if st2 notin visited:
+          queue.push((fScore[st2], st2))
+          visited.incl(st2)
 
 proc seqToIter*[T](xs: seq[T]): iterator: T =
   return iterator(): T =
