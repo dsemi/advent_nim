@@ -1,15 +1,15 @@
+import fusion/matching
 import math
 import re
 import sequtils
 import strutils
 import sugar
-import unpack
 
 import "../utils"
 
 proc parse(input: string): seq[seq[int]] =
   for line in input.splitlines:
-    [speed, flyTime, restTime] <- line.findAll(re"\d+").map(parseInt)
+    [@speed, @flyTime, @restTime] := line.findAll(re"\d+").map(parseInt)
     let period = repeat(speed, flyTime) & repeat(0, restTime)
     let full = collect(newSeq):
       for i in 0 ..< 2503:

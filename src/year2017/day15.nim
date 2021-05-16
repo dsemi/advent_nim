@@ -1,10 +1,10 @@
+import fusion/matching
 import sequtils
 import strutils
 import sugar
-import unpack
 
 proc parse(input: string): (int, int) =
-  [a, b] <- input.splitLines.mapIt(it.splitWhitespace[^1].parseInt)
+  [@a, @b] := input.splitLines.mapIt(it.splitWhitespace[^1].parseInt)
   (a, b)
 
 proc judge(nA, nB: (int) -> int, n: int, gens: (int, int)): int =

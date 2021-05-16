@@ -1,9 +1,9 @@
 import algorithm
+import fusion/matching
 import sequtils
 import strutils
 import sugar
 import tables
-import unpack
 
 import "../utils"
 
@@ -14,7 +14,7 @@ proc parseImg(input: string): Grid =
 
 proc parseExpansions(input: string): Table[Grid, Grid] =
   for line in input.splitLines:
-    [k, rest] <- line.split(" => ")
+    [@k, @rest] := line.split(" => ")
     let v = rest.parseImg
     var grid = k.parseImg
     for _ in 1..4:

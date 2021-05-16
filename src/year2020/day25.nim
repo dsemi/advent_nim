@@ -1,14 +1,14 @@
+import fusion/matching
 import math
 import sequtils
 import strutils
 import tables
-import unpack
 
 import "../utils"
 
 proc part1*(input: string): int =
   let md = 20201227
-  [card, door] <- input.splitlines.map(parseInt)
+  [@card, @door] := input.splitlines.map(parseInt)
   let m = int(ceil(sqrt(float(md))))
   var tbl = initTable[int, int]()
   var n = 1

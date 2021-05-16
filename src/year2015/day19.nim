@@ -1,17 +1,17 @@
 import algorithm
+import fusion/matching
 import regex
 import sequtils
 import sets
+import strtabs
 import strutils
-import tables
-import unpack
 import sugar
 
 proc parse(input: string): (seq[(string, string)], string) =
-  [reps, molecule] <- input.split("\n\n")
+  [@reps, @molecule] := input.split("\n\n")
   var repss: seq[(string, string)]
   for rep in reps.splitlines:
-    [a, b] <- rep.split(" => ")
+    [@a, @b] := rep.split(" => ")
     repss.add((a, b))
   (repss, molecule)
 
@@ -31,7 +31,7 @@ proc part1*(input: string): int =
 proc part2*(input: string): int =
   var (reps, molecule) = parse(input)
   molecule = molecule.reversed.join
-  var repsM: Table[string, string]
+  var repsM = newStringTable()
   for (k, v) in reps:
     repsM[v.reversed.join] = k.reversed.join
   let regex = toSeq(repsM.keys).join("|").re

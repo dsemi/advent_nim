@@ -1,12 +1,12 @@
+import fusion/matching
 import intsets
 import strutils
 import sugar
-import unpack
 
 proc parse(input: string): seq[(string, int)] =
   result = collect(newSeq):
     for line in input.splitlines:
-      [cmd, n] <- line.split()
+      [@cmd, @n] := line.split()
       (cmd, n.parseInt)
 
 proc run(prog: seq[(string, int)]): (int, bool) =

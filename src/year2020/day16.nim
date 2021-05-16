@@ -1,14 +1,14 @@
+import fusion/matching
 import sequtils
 import sets
 import strscans
 import strutils
 import sugar
-import unpack
 
 type Rule = (string, seq[(int, int)])
 
 proc parse(input: string): (seq[Rule], seq[int], seq[seq[int]]) =
-  [rules, yours, others] <- input.split("\n\n")
+  [@rules, @yours, @others] := input.split("\n\n")
   var rls = newSeq[Rule]()
   for line in rules.splitlines:
     var name: string

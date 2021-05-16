@@ -1,6 +1,6 @@
+import fusion/matching
 import sequtils
 import strutils
-import unpack
 
 type Coord4 = tuple
   w: int
@@ -10,7 +10,7 @@ type Coord4 = tuple
 
 proc parsePoints(input: string): seq[Coord4] =
   for line in input.splitLines:
-    [a, b, c, d] <- line.split(',').map(parseInt)
+    [@a, @b, @c, @d] := line.split(',').map(parseInt)
     result.add((a, b, c, d))
 
 proc dist(a, b: Coord4): int =

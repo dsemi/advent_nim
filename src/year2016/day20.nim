@@ -1,8 +1,8 @@
 import algorithm
+import fusion/matching
 import math
 import sequtils
 import strutils
-import unpack
 
 type IpFilter = tuple
   lo: int
@@ -11,7 +11,7 @@ type IpFilter = tuple
 iterator parseIpFilters(input: string): IpFilter =
   var ips: seq[IpFilter]
   for line in input.splitLines:
-    [a, b] <- line.split('-').map(parseInt)
+    [@a, @b] := line.split('-').map(parseInt)
     ips.add((a, b))
   ips.sort
   var curr = ips[0]

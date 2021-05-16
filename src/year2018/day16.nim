@@ -1,9 +1,9 @@
 import algorithm
+import fusion/matching
 import sequtils
 import strutils
 import sugar
 import tables
-import unpack
 
 type Op = enum
   Addr, Addi, Mulr, Muli, Banr, Bani, Borr, Bori,
@@ -29,8 +29,8 @@ proc eval(v: var openArray[int], op: Op, a, b, c: int) =
            of Eqrr: int(v[a] == v[b])
 
 proc testSample(sample: string): (int, set[Op]) =
-  [before, instr, after] <- sample.splitLines
-  [op, a, b, c] <- instr.split.map(parseInt)
+  [@before, @instr, @after] := sample.splitLines
+  [@op, @a, @b, @c] := instr.split.map(parseInt)
   let mem1 = before.split('[')[1][0..^2].split(", ").map(parseInt)
   let mem2 = after.split('[')[1][0..^2].split(", ").map(parseInt)
   result[0] = op
@@ -55,7 +55,7 @@ proc determineOpCodes(m: var Table[int, set[Op]]): Table[int, Op] =
       {k: toSeq(v.items)[0]}
 
 proc part2*(input: string): int =
-  [prog, _, *samples] <- input.split("\n\n").reversed
+  [@prog, _, all @samples] := input.split("\n\n").reversed
   var m: Table[int, set[Op]]
   for sample in samples:
     let (k, v) = sample.testSample
@@ -66,6 +66,6 @@ proc part2*(input: string): int =
   let ops = m.determineOpCodes
   var mem = [0, 0, 0, 0]
   for line in prog.splitLines:
-    [op, a, b, c] <- line.split.map(parseInt)
+    [@op, @a, @b, @c] := line.split.map(parseInt)
     mem.eval(ops[op], a, b, c)
   mem[0]

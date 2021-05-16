@@ -1,8 +1,8 @@
+import fusion/matching
 import options
 import sequtils
 import strutils
 import sugar
-import unpack
 
 type
   Pipe = object
@@ -15,7 +15,7 @@ type
 
 proc parsePipes(input: string): seq[Pipe] =
   for line in input.splitLines:
-    [a, b] <- line.split('/').map(parseInt)
+    [@a, @b] := line.split('/').map(parseInt)
     result.add(Pipe(a: a, b: b))
 
 proc solve[T](input: string, start: T, step: (T, Pipe) -> T): T =

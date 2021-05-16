@@ -1,12 +1,12 @@
+import fusion/matching
 import sequtils
 import strutils
 import sugar
-import unpack
 
 import "../utils"
 
 proc parse(input: string): (int, seq[(int, int)]) =
-  [t, row] <- input.splitlines
+  [@t, @row] := input.splitlines
   let buses = collect(newSeq):
     for i, x in toSeq(row.split(',')):
       if x != "x":

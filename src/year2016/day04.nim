@@ -1,9 +1,9 @@
 import algorithm
+import fusion/matching
 import math
 import sequtils
 import strutils
 import tables
-import unpack
 
 type Room = object
   name: string
@@ -12,8 +12,8 @@ type Room = object
 
 iterator parseRooms(input: string): Room =
   for line in input.splitLines:
-    [name, rest] <- line.rsplit('-', 1)
-    [sector, rest2] <- rest.split('[')
+    [@name, @rest] := line.rsplit('-', 1)
+    [@sector, @rest2] := rest.split('[')
     yield Room(name: name, sectorId: sector.parseInt, checksum: rest2[0..^2])
 
 proc isReal(room: Room): bool =

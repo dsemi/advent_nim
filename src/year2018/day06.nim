@@ -1,14 +1,14 @@
+import fusion/matching
 import math
 import sequtils
 import strutils
 import tables
-import unpack
 
 import "../utils"
 
 proc parseCoords(input: string): seq[Coord] =
   for line in input.splitLines:
-    [a, b] <- line.split(", ").map(parseInt)
+    [@a, @b] := line.split(", ").map(parseInt)
     result.add((a, b))
 
 proc dist(a, b: Coord): int =

@@ -5,7 +5,6 @@ import sets
 import strutils
 import sugar
 import tables
-import unpack
 
 import "../utils"
 
@@ -31,10 +30,10 @@ proc part2*(input: string): int =
   for line in input.splitLines:
     case line.split(" -> "):
       of [@nw, @chs]:
-        [n, w] <- nw.split(" (")
+        [@n, @w] := nw.split(" (")
         m[n] = (n, w[0..^2].parseInt, chs.split(", "))
       of [@nw]:
-        [n, w] <- nw.split(" (")
+        [@n, @w] := nw.split(" (")
         m[n] = (n, w[0..^2].parseInt, @[])
 
   proc findImbalance(curr: string): (int, bool) =

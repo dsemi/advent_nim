@@ -1,7 +1,7 @@
+import fusion/matching
 import sequtils
 import strutils
 import tables
-import unpack
 
 proc spin(n: int): proc(v: var string) =
   return proc(v: var string) =
@@ -21,10 +21,10 @@ proc parseMoves(moves: seq[string]): seq[proc(v: var string)] =
     case move[0]
     of 's': result.add(spin(move[1..^1].parseInt))
     of 'x':
-      [a, b] <- move[1..^1].split('/').map(parseInt)
+      [@a, @b] := move[1..^1].split('/').map(parseInt)
       result.add(exchange(a, b))
     of 'p':
-      [a, b] <- move[1..^1].split('/').mapIt(it[0])
+      [@a, @b] := move[1..^1].split('/').mapIt(it[0])
       result.add(partner(a, b))
     else: raiseAssert "Invalid move: " & move
 

@@ -1,9 +1,9 @@
+import fusion/matching
 import re
 import sequtils
 import strutils
 import sugar
 import tables
-import unpack
 
 proc parse(input: string): Table[string, seq[(int, string)]] =
   result = initTable[string, seq[(int, string)]]()
@@ -12,7 +12,7 @@ proc parse(input: string): Table[string, seq[(int, string)]] =
     var vs = collect(newSeq):
       for x in bgs[1 .. ^1]:
         if "no other" notin x:
-          [n, bg] <- x.rsplit(' ', 1)[0].split(' ', 1)
+          [@n, @bg] := x.rsplit(' ', 1)[0].split(' ', 1)
           (n.parseInt, bg)
     result[bgs[0].rsplit(' ', 1)[0]] = vs
 

@@ -1,6 +1,6 @@
+import fusion/matching
 import sequtils
 import strutils
-import unpack
 
 type
   Item = object
@@ -58,7 +58,7 @@ proc isWinning(b: Player, p: Player): bool =
   ttd(p, b) >= ttd(b, p)
 
 proc parseBoss(s: string): Player =
-  [hp, dmg, ar] <- s.splitlines.mapIt(it.split[^1].parseInt)
+  [@hp, @dmg, @ar] := s.splitlines.mapIt(it.split[^1].parseInt)
   Player(item: Item(cost: 0, damage: dmg, armor: ar), hp: hp)
 
 iterator allBattles(input: string): (bool, Player) =

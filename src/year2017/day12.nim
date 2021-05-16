@@ -1,16 +1,16 @@
+import fusion/matching
 import deques
 import intsets
 import sequtils
 import strutils
 import sugar
 import tables
-import unpack
 
 import "../utils"
 
 proc parsePipes(input: string): Table[int, seq[int]] =
   for line in input.splitLines:
-    [a, b] <- line.split(" <-> ")
+    [@a, @b] := line.split(" <-> ")
     result[a.parseInt] = b.split(", ").map(parseInt)
 
 proc part1*(input: string): int =

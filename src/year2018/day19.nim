@@ -1,6 +1,6 @@
+import fusion/matching
 import sequtils
 import strutils
-import unpack
 
 type
   Op = enum
@@ -15,7 +15,7 @@ proc parseInstrs(input: string): (int, seq[Instr]) =
   let lns = input.splitLines
   result[0] = lns[0].split[^1].parseInt
   for line in lns[1..^1]:
-    [cmd, *rest] <- line.splitWhitespace
+    [@cmd, all @rest] := line.splitWhitespace
     let op = case cmd:
                of "addr": Addr
                of "addi": Addi
@@ -34,7 +34,7 @@ proc parseInstrs(input: string): (int, seq[Instr]) =
                of "eqri": Eqri
                of "eqrr": Eqrr
                else: raiseAssert "Bad instr: " & line
-    [a, b, c] <- rest.map(parseInt)
+    [@a, @b, @c] := rest.map(parseInt)
     result[1].add(Instr(op: op, a: a, b: b, c: c))
 
 proc eval(v: var openArray[int], instr: Instr) =

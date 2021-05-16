@@ -1,6 +1,6 @@
+import fusion/matching
 import strutils
 import tables
-import unpack
 
 var tape = {
   "children": proc (x: int): bool = x == 3,
@@ -19,7 +19,7 @@ proc findAunt(input: string): int =
   for i, line in pairs(input.splitlines):
     block aunt:
       for petstr in line.split(": ", maxsplit = 1)[^1].split(", "):
-        [pet, cnt] <- petstr.split(": ")
+        [@pet, @cnt] := petstr.split(": ")
         if not tape[pet](cnt.parseInt):
           break aunt
       return i + 1

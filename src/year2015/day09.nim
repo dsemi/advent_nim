@@ -1,13 +1,13 @@
+import fusion/matching
 import itertools
 import sequtils
 import strutils
 import tables
-import unpack
 
 iterator paths(input: string): int =
   var d = initTable[string, Table[string, int]]()
   for line in input.splitlines:
-    [p1, _, p2, _, v] <- line.split
+    [@p1, _, @p2, _, @v] := line.split
     let n = v.parseInt
     d.mGetOrPut(p1, initTable[string, int]())[p2] = n
     d.mGetOrPut(p2, initTable[string, int]())[p1] = n

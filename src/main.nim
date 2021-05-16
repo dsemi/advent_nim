@@ -1,3 +1,4 @@
+import fusion/matching
 import httpclient
 import os
 import sequtils
@@ -7,7 +8,6 @@ import sugar
 import tables
 import terminal
 import times
-import unpack
 
 import problems
 
@@ -65,7 +65,7 @@ let year = commandLineParams()[0].parseInt
 var total = 0.0
 for daystr in commandLineParams()[1 .. ^1]:
   let days = if "-" in daystr:
-               [a, b] <- daystr.split("-")
+               [@a, @b] := daystr.split("-")
                toSeq(a.parseInt .. b.parseInt)
              else:
                @[daystr.parseInt]

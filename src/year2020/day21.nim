@@ -1,15 +1,16 @@
 import algorithm
+import fusion/matching
 import sequtils
 import sets
+import strtabs
 import strutils
 import sugar
 import tables
-import unpack
 
 proc parse(input: string): seq[(seq[string], seq[string])] =
   result = collect(newSeq):
     for line in input.splitlines:
-      [ings, alls] <- line.split(" (contains ")
+      [@ings, @alls] := line.split(" (contains ")
       (ings.split(), alls[0..^2].split(", "))
 
 proc allergens(foods: seq[(seq[string], seq[string])]): Table[string, HashSet[string]] =
@@ -35,7 +36,7 @@ proc part1*(input: string): int =
 
 proc part2*(input: string): string =
   var alls = allergens(parse(input))
-  var done = initTable[string, string]()
+  var done = newStringTable()
   while alls.len != 0:
     for (k, v) in alls.mpairs:
       if v.len == 1:

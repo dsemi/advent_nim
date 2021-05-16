@@ -1,11 +1,11 @@
+import fusion/matching
 import strutils
 import tables
-import unpack
 
 type Map = Table[(char, char, char, char, char), char]
 
 proc parse(input: string): (Map, seq[(int, char)]) =
-  [initial, rest] <- input.split("\n\n")
+  [@initial, @rest] := input.split("\n\n")
   for i, c in initial.replace("initial state: "):
     result[1].add((i, c))
   for line in rest.splitLines:

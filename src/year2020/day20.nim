@@ -1,16 +1,16 @@
+import fusion/matching
 import math
 import sequtils
 import sets
 import strutils
 import sugar
 import tables
-import unpack
 
 type Tile = (int, seq[seq[bool]])
 
 proc parse(input: string): seq[Tile] =
   for part in input.split("\n\n"):
-    [t, *grid] <- part.splitlines
+    [@t, all @grid] := part.splitlines
     result.add((t.split()[^1][0 .. ^2].parseInt, grid.map((row) => row.mapIt(it == '#'))))
 
 proc hashSide(arr: seq[bool]): int =

@@ -1,6 +1,6 @@
+import fusion/matching
 import sequtils
 import strutils
-import unpack
 
 type
   Game = object
@@ -56,7 +56,7 @@ proc applyEffects(state: var Game) =
     state.rechargeTurns -= 1
 
 proc parseBoss(input: string): Game =
-  [bHealth, bDamage] <- input.splitlines.mapIt(it.split(": ")[^1].parseInt)
+  [@bHealth, @bDamage] := input.splitlines.mapIt(it.split(": ")[^1].parseInt)
   Game(playerHealth: 50, playerMana: 500, bossHealth: bHealth, bossDamage: bDamage)
 
 proc minCostToWin(s: Game, hard: bool): int =

@@ -1,10 +1,10 @@
+import fusion/matching
 import sequtils
 import strutils
-import unpack
 
 proc parseFirewall(input: string): seq[(int, int)] =
   for line in input.splitLines:
-    [a, b] <- line.split(": ").map(parseInt)
+    [@a, @b] := line.split(": ").map(parseInt)
     result.add((a, 2*b-2))
 
 proc part1*(input: string): int =

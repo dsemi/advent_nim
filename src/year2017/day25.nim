@@ -1,13 +1,15 @@
 import deques
+import fusion/matching
 import nre
+import options
+import sequtils
 import strutils
-import unpack
 
 type Dir = enum
   Left, Right
 
 proc parseMachine(input: string): (int, int, seq[seq[(int, Dir, int)]]) =
-  [strt, *ruleDescs] <- input.split("\n\n")
+  [@strt, all @ruleDescs] := input.split("\n\n")
   let cap = match(strt, re"Begin in state (.)\.\nPerform a diagnostic checksum after (\d+) steps\.").get.captures
   let start = cap[0][0].ord - 'A'.ord
   let steps = cap[1].parseInt
@@ -23,7 +25,7 @@ proc parseMachine(input: string): (int, int, seq[seq[(int, Dir, int)]]) =
     rules.add(@[])
     doAssert state0.ord - 'A'.ord == rules.high
     for m in findIter(ruleDesc, ruleReg):
-      [val0, val1, d, state1] <- m.captures
+      [@val0, @val1, @d, @state1] := m.captures.toSeq.mapIt(it.get)
       rules[^1].add((val1.parseInt, if d == "left": Left else: Right, state1[0].ord - 'A'.ord))
       doAssert val0.parseInt == rules[^1].high
   (start, steps, rules)

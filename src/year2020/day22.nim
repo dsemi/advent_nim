@@ -1,9 +1,9 @@
 import algorithm
+import fusion/matching
 import sequtils
 import sets
 import strutils
 import sugar
-import unpack
 
 proc parse(input: string): seq[seq[int]] =
   collect(newSeq):
@@ -34,9 +34,9 @@ proc play(pa: seq[int], pb: seq[int], part2: bool = false, sub: bool = false): (
   return (sum, pb.len == 0)
 
 proc part1*(input: string): int =
-  [p1, p2] <- parse(input)
+  [@p1, @p2] := parse(input)
   play(p1, p2)[0]
 
 proc part2*(input: string): int =
-  [p1, p2] <- parse(input)
+  [@p1, @p2] := parse(input)
   play(p1, p2, true)[0]

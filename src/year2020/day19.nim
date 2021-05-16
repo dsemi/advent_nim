@@ -1,8 +1,8 @@
 import algorithm
+import fusion/matching
 import sequtils
 import strutils
 import sugar
-import unpack
 
 type
   RuleKind = enum
@@ -14,10 +14,10 @@ type
     of multi: rss: seq[seq[int]]
 
 proc parse(input: string): (seq[Rule], seq[string]) =
-  [rules, messages] <- input.split("\n\n")
+  [@rules, @messages] := input.split("\n\n")
   var res: seq[(int, Rule)]
   for line in rules.splitlines:
-    [k, v] <- line.split(": ")
+    [@k, @v] := line.split(": ")
     let rule = if v[0] == '"':
       Rule(kind: single, ch: v[1])
     else:

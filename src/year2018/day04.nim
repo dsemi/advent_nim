@@ -1,10 +1,10 @@
 import algorithm
+import fusion/matching
 import math
 import sequtils
 import strutils
 import sugar
 import tables
-import unpack
 
 type
   RecordKind = enum
@@ -17,7 +17,7 @@ type
 
 proc parseRecords(input: string): seq[Record] =
   for line in toSeq(input.splitLines).sorted:
-    [time, rest] <- line.split("] ")
+    [@time, @rest] := line.split("] ")
     if rest.startsWith("Guard"):
       result.add(Record(kind: GuardChange, guardNum: rest.filter(isDigit).join.parseInt))
     else:
