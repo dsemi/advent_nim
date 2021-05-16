@@ -1,6 +1,7 @@
 import hashes
 import sequtils
 import strutils
+import sugar
 
 import "../utils"
 
@@ -73,6 +74,6 @@ proc part2*(input: string): int =
     if a[1] == b[1]: 1
     else: 7
 
-  let path = aStar(neighbors, time, heur, (target, Torch), ((0, 0), Torch))
+  let path = aStar(neighbors, time, heur, (a) => a == (target, Torch), ((0, 0), Torch))
   for (a, b) in path.zip(path[1..^1]):
     result += time(a, b)

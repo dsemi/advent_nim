@@ -155,7 +155,7 @@ iterator bfs*[T](start: T, neighbors: T -> (iterator: T)): (int, T) =
         visited.incl(st2)
         frontier.addLast((d+1, st2))
 
-proc aStar*[T](neighbors: T -> (iterator: T), dist: (T, T) -> int, heur: T -> int, goal, start: T): seq[T] =
+proc aStar*[T](neighbors: T -> (iterator: T), dist: (T, T) -> int, heur: T -> int, goal: T -> bool, start: T): seq[T] =
   var visited = [start].toHashSet
   var queue = [(0, start)].toHeapQueue
   var cameFrom: Table[T, T]
@@ -166,7 +166,7 @@ proc aStar*[T](neighbors: T -> (iterator: T), dist: (T, T) -> int, heur: T -> in
   var x = 0
   while queue.len > 0:
     let (_, st) = queue.pop
-    if st == goal:
+    if goal(st):
       result = @[st]
       while result[^1] in cameFrom:
         result.add(cameFrom[result[^1]])
