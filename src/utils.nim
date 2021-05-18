@@ -271,3 +271,13 @@ proc pop*[T](list: var CircularList[T]): T {.inline.} =
   node.prev.next = list.focus
   list.focus.prev = node.prev
   dec list.size
+
+proc first[T](a, b: T): T = a
+
+proc intersect*[K, V](a, b: Table[K, V], f: (V, V) -> V = first): Table[K, V] =
+  result = a
+  for k in a.keys:
+    if k notin b:
+      result.del(k)
+    else:
+      result[k] = f(result[k], b[k])
