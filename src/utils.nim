@@ -165,6 +165,17 @@ proc lazy*[T](f: proc(): T): proc(): T =
 
 proc force*[T](f: proc(): T): T = f()
 
+iterator dfs*[T](start: T, neighbors: T -> seq[T]): (int, T) =
+  var visited = toHashSet([start])
+  var frontier = @[(0, start)]
+  while frontier.len > 0:
+    let (d, st) = frontier.pop
+    yield (d, st)
+    for st2 in neighbors(st):
+      if st2 notin visited:
+        visited.incl(st2)
+        frontier.add((d+1, st2))
+
 iterator bfs*[T](start: T, neighbors: T -> (iterator: T)): (int, T) =
   var visited = toHashSet([start])
   var frontier = toDeque([(0, start)])
