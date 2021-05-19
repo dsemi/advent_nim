@@ -5,9 +5,11 @@ import options
 import pegs
 import sequtils
 import strutils
+import sugar
 import tables
 
 type Group = ref object
+  num: int
   name: string
   numUnits: int
   hitPts: int
@@ -30,9 +32,9 @@ proc parseGroups(input: string): Table[int, Group] =
     for line in rest:
       var caps: array[6, string]
       doAssert match(line, grammar, caps)
-      [@u, @hp, @d, @i] := (caps[0..1] & caps[3..3] & caps[5..5]).map(parseInt)
+      [@u, @hp, @d, @ini] := (caps[0..1] & caps[3..3] & caps[5..5]).map(parseInt)
       let e = caps[4]
-      var group = Group(name: n[0..^2], numUnits: u, hitPts: hp, dmg: d, element: e, initiative: i)
+      var group = Group(num: i, name: n[0..^2], numUnits: u, hitPts: hp, dmg: d, element: e, initiative: ini)
       if caps[2] != "":
         for modifier in caps[2][1..^2].split("; "):
           [@mn, @ms] := modifier.split(" to ")
@@ -51,7 +53,7 @@ proc calcDmg(a, b: Group): int =
   elif a.element in b.immunities: 0
   else: a.effPwr
 
-proc selectTarget(groups: Table[int, Group], attacked: IntSet, grp: Group): Option[int] =
+proc selectTarget(groups: var Table[int, Group], attacked: var IntSet, grp: Group): Option[int] =
   var mx = (0, 0, 0, 0)
   for (i, g) in groups.pairs:
     if grp.name != g.name and i notin attacked:
@@ -59,16 +61,17 @@ proc selectTarget(groups: Table[int, Group], attacked: IntSet, grp: Group): Opti
       if (mx2[1], mx2[2], mx2[3]) > (mx[1], mx[2], mx[3]):
         mx = mx2
   if mx[1] > 0:
+    attacked.incl(mx[0])
     return some(mx[0])
 
-proc targetSelection(groups: Table[int, Group]): seq[(int, int)] =
-  let targets = toSeq(groups.pairs).sortedByIt((-it[1].effPwr, -it[1].initiative))
+proc targetSelection(groups: var Table[int, Group]): seq[(int, int)] =
+  let targetSelectors = toSeq(groups.values).sortedByIt((-it.effPwr, -it.initiative))
   var s: IntSet
-  for (i, g) in targets:
-    if Some(@t) ?= groups.selectTarget(s, g):
-      s.incl(t)
-      result.add((i, t))
-  result = result.sortedByIt(-groups[it[0]].initiative)
+  let res = collect(newSeq):
+    for g in targetSelectors:
+      if Some(@t) ?= groups.selectTarget(s, g):
+        (g, t)
+  res.sortedByIt(-it[0].initiative).mapIt((it[0].num, it[1]))
 
 proc attack(groups: var Table[int, Group], atks: seq[(int, int)]): bool =
   for (k1, k2) in atks:

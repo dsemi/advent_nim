@@ -1,4 +1,3 @@
-import algorithm
 import math
 import sequtils
 import strscans
@@ -21,7 +20,7 @@ proc inRange(bot: Nanobot, coord: Coord3): bool =
 
 proc part1*(input: string): int =
   let ns = input.parseNanobots
-  let maxBot = ns.sortedByIt(it.radius)[^1]
+  let maxBot = ns.foldl(if b.radius > a.radius: b else: a)
   for bot in ns:
     if maxBot.inRange(bot.pos):
       inc result
