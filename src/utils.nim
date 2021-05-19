@@ -135,6 +135,10 @@ proc transpose*[T](s: seq[seq[T]]): seq[seq[T]] =
       if i < s[j].len:
         result[i].add(s[j][i])
 
+proc chunks*[T](s: openArray[T], n: int): seq[seq[T]] =
+  for i in countup(0, s.high, n):
+    result.add(s[i..<i+n])
+
 macro toItr*(x: ForLoopStmt): untyped =
   ## Convert factory proc call for inline-iterator-like usage.
   ## E.g.: ``for e in toItr(myFactory(parm)): echo e``.
