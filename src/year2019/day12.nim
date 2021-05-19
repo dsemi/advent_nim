@@ -3,8 +3,6 @@ import sequtils
 import strscans
 import strutils
 
-import "../utils"
-
 type Moon = object
   pos: seq[int]
   vel: seq[int]
