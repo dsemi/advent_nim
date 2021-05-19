@@ -10,12 +10,10 @@ proc valid(sides: openArray[int]): bool =
 proc part1*(input: string): int =
   for line in input.splitLines:
     let ns = line.splitWhitespace.map(parseInt)
-    if ns.valid:
-      inc result
+    result += ns.valid.int
 
 proc part2*(input: string): int =
   let grid = input.splitLines.mapIt(it.splitWhitespace.map(parseInt)).transpose
   for row in grid:
     for i in countup(row.low, row.high, 3):
-      if row[i..i+2].valid:
-        inc result
+      result += row[i..i+2].valid.int

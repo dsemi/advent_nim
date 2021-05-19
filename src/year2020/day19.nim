@@ -44,7 +44,7 @@ proc countMatches(rules: seq[Rule], messages: seq[string]): int =
       result.add(fold)
   for message in messages:
     if message.len in go(rules[0], message):
-      result += 1
+      inc result
 
 proc part1*(input: string): int =
   let (rules, messages) = parse(input)

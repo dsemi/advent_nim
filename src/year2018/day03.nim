@@ -25,8 +25,7 @@ proc coordFreq(claims: seq[Claim]): seq[seq[int]] =
 proc part1*(input: string): int =
   for col in input.parseClaims.coordFreq:
     for v in col:
-      if v > 1:
-        inc result
+      result += int(v > 1)
 
 proc part2*(input: string): int =
   let claims = input.parseClaims

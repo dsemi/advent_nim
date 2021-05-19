@@ -32,8 +32,7 @@ proc countInfections(bursts: int, next: (NodeState) -> NodeState, input: string)
     let val = grid[pos[0]][pos[1]]
     dir.turn(val)
     let val2 = val.next
-    if val2 == Infected:
-      inc result
+    result += int(val2 == Infected)
     grid[pos[0]][pos[1]] = val2
     pos += dir
 

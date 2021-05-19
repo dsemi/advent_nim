@@ -22,8 +22,7 @@ proc part1*(input: string): int =
   let ns = input.parseNanobots
   let maxBot = ns.foldl(if b.radius > a.radius: b else: a)
   for bot in ns:
-    if maxBot.inRange(bot.pos):
-      inc result
+    result += maxBot.inRange(bot.pos).int
 
 proc part2*(input: string): int =
   var ns = input.parseNanobots

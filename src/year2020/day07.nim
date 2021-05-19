@@ -22,8 +22,7 @@ proc holdsShinyGold(m: Table[string, seq[(int, string)]], k: string): bool =
 proc part1*(input: string): int =
   let m = parse(input)
   for k in m.keys:
-    if holdsShinyGold(m, k):
-      result += 1
+    result += holdsShinyGold(m, k).int
 
 proc countBags(m: Table[string, seq[(int, string)]], k: string): int =
   for (n, k2) in m[k]:

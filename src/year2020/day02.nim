@@ -11,10 +11,8 @@ iterator parse(input: string): (int, int, char, string) =
 proc part1*(input: string): int =
   for (a, b, c, str) in parse(input):
     let cnt = str.count(c)
-    if a <= cnt and cnt <= b:
-      result += 1
+    result += int(a <= cnt and cnt <= b)
 
 proc part2*(input: string): int =
   for (a, b, c, str) in parse(input):
-    if str[a-1] == c xor str[b-1] == c:
-      result += 1
+    result += int(str[a-1] == c xor str[b-1] == c)

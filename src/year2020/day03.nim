@@ -6,8 +6,7 @@ proc countTrees(right: int, down: int, input: string): int64 =
     if y mod down != 0:
       continue
     let y = y div down
-    if row[y * right mod row.len] == '#':
-      result += 1
+    result += int(row[y * right mod row.len] == '#')
 
 proc part1*(input: string): int64 =
   countTrees(3, 1, input)

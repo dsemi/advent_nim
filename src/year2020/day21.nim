@@ -8,13 +8,12 @@ import sugar
 import tables
 
 proc parse(input: string): seq[(seq[string], seq[string])] =
-  result = collect(newSeq):
+  collect(newSeq):
     for line in input.splitlines:
       [@ings, @alls] := line.split(" (contains ")
       (ings.split(), alls[0..^2].split(", "))
 
 proc allergens(foods: seq[(seq[string], seq[string])]): Table[string, HashSet[string]] =
-  result = initTable[string, HashSet[string]]()
   for (ings, alls) in foods:
     let ingset = toHashSet(ings)
     for allergen in alls:
@@ -31,8 +30,7 @@ proc part1*(input: string): int =
   for v in alls.values:
     safe = safe - v
   for i in ingredients:
-    if i in safe:
-      result += 1
+    result += int(i in safe)
 
 proc part2*(input: string): string =
   var alls = allergens(parse(input))

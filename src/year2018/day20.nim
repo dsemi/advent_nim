@@ -31,5 +31,4 @@ proc part1*(input: string): int =
 
 proc part2*(input: string): int =
   for v in input.parseEdges.values:
-    if v >= 1000:
-      inc result
+    result += int(v >= 1000)

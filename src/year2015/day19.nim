@@ -37,4 +37,4 @@ proc part2*(input: string): int =
   let regex = toSeq(repsM.keys).join("|").re
   while molecule != "e":
     molecule = replace(molecule, regex, (m, s) => repsM[s[m.boundaries]], 1)
-    result += 1
+    inc result

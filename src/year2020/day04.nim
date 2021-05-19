@@ -6,7 +6,7 @@ import strutils
 proc part1*(input: string): int =
   for line in input.split("\n\n"):
     if ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"].allIt(contains(line, re(fmt"(^|\s){it}:"))):
-      result += 1
+      inc result
 
 proc part2*(input: string): int =
   for line in input.split("\n\n"):
@@ -17,4 +17,4 @@ proc part2*(input: string): int =
         re"(^|\s)hcl:#[0-9a-f]{6}(\s|$)",
         re"(^|\s)ecl:(amb|blu|brn|gry|grn|hzl|oth)(\s|$)",
         re"(^|\s)pid:[0-9]{9}(\s|$)"].allIt(contains(line, it)):
-      result += 1
+      inc result

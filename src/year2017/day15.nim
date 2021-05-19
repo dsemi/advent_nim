@@ -10,8 +10,7 @@ proc parse(input: string): (int, int) =
 proc judge(nA, nB: (int) -> int, n: int, gens: (int, int)): int =
   var (a, b) = gens
   for _ in 1..n:
-    if uint16(a) == uint16(b):
-      inc result
+    result += int(uint16(a) == uint16(b))
     a = nA(a)
     b = nB(b)
 

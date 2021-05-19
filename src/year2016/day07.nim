@@ -25,8 +25,7 @@ proc supportsTls(ip: Ip): bool =
 
 proc part1*(input: string): int =
   for ip in ips(input):
-    if ip.supportsTls:
-      inc result
+    result += ip.supportsTls.int
 
 iterator abas(s: string): (char, char) =
   for i in s.low..s.high-2:
@@ -42,5 +41,4 @@ proc supportsSsl(ip: Ip): bool =
 
 proc part2*(input: string): int =
   for ip in ips(input):
-    if ip.supportsSsl:
-      inc result
+    result += ip.supportsSsl.int

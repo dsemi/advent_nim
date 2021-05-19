@@ -50,8 +50,7 @@ proc countPxAfterExpanding(input: string, n: int): int =
     img = img.expandImage(m)
   for row in img:
     for v in row:
-      if v:
-        inc result
+      result += v.int
 
 proc part1*(input: string): int =
   input.countPxAfterExpanding(5)

@@ -45,5 +45,4 @@ proc part2*(input: string): int =
   let n = 10_000
   let coords = input.parseCoords
   for x in coords.allWithin(n div coords.len):
-    if coords.mapIt(dist(x, it)).sum < n:
-      inc result
+    result += int(coords.mapIt(dist(x, it)).sum < n)

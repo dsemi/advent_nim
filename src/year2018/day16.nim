@@ -40,8 +40,7 @@ proc testSample(sample: string): (int, set[Op]) =
 
 proc part1*(input: string): int =
   for sample in input.split("\n\n")[0..^3]:
-    if sample.testSample[1].card >= 3:
-      inc result
+    result += int(sample.testSample[1].card >= 3)
 
 proc determineOpCodes(m: var Table[int, set[Op]]): Table[int, Op] =
   while not toSeq(m.values).allIt(it.card == 1):

@@ -70,11 +70,9 @@ proc flood(ground: Ground): Ground =
 proc part1*(input: string): int =
   for col in input.parseScans.flood.grid:
     for c in col:
-      if c in "~|":
-        inc result
+      result += int(c in "~|")
 
 proc part2*(input: string): int =
   for col in input.parseScans.flood.grid:
     for c in col:
-      if c in "~":
-        inc result
+      result += int(c == '~')
