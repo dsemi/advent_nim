@@ -17,13 +17,6 @@ proc get[T](grid: var seq[seq[T]], coord: Coord): var T =
 proc get[T](grid: seq[seq[T]], coord: Coord): T =
   grid[coord[0]][coord[1]]
 
-type
-  Network = Table[char, Table[char, seq[Path]]]
-
-  Path = object
-    dist: int
-    doors: set[char]
-
 proc distsToKeys(grid: seq[seq[char]], found: set[char], start: Coord): seq[(char, (int, Coord))] =
   proc neighbors(node: (Coord, int)): seq[(Coord, int)] =
     let (pos, depth) = node
