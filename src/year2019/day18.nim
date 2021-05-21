@@ -1,65 +1,70 @@
 import deques
 import sequtils
-import sets
+import intsets
 import strutils
 import sugar
 import tables
 
 import "../utils"
 
-proc parseMaze(input: string): seq[seq[char]] =
+type Grid = ref object
+  arr: seq[char]
+  cols: int
+
+proc parseMaze(input: string): Grid =
+  var arr: seq[char]
+  var cols: int
   for row in input.splitLines:
-    result.add(toSeq(row))
+    cols = row.len
+    arr.add(row)
+  Grid(arr: arr, cols: cols)
 
-proc get[T](grid: var seq[seq[T]], coord: Coord): var T =
-  grid[coord[0]][coord[1]]
-
-proc get[T](grid: seq[seq[T]], coord: Coord): T =
-  grid[coord[0]][coord[1]]
-
-proc distsToKeys(grid: seq[seq[char]], found: set[char], start: Coord): seq[(char, (int, Coord))] =
-  proc neighbors(node: (Coord, int)): seq[(Coord, int)] =
+proc distsToKeys(grid: Grid, found: set[char], start: int): seq[(char, int, int)] =
+  proc neighbors(node: (int, int)): seq[(int, int)] =
     let (pos, depth) = node
-    for d in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
+    for d in [-grid.cols, -1, 1, grid.cols]:
       let p2 = pos + d
-      let v = grid.get(p2)
+      let v = grid.arr[p2]
       if v != '#' and (not v.isUpperAscii or v.toLowerAscii in found):
         result.add((p2, depth + 1))
 
-  var visited = [start].toHashSet
+  var visited = [start].toIntSet
   var frontier = (start, 0).neighbors.toDeque
   while frontier.len > 0:
     let (pos, depth) = frontier.popFirst
     if pos in visited:
       continue
     visited.incl(pos)
-    let k = grid.get(pos)
+    let k = grid.arr[pos]
     if k.isLowerAscii and k notin found:
-      result.add((k, (depth, pos)))
+      result.add((k, depth, pos))
     else:
       for neighb in (pos, depth).neighbors:
         frontier.addLast(neighb)
 
-proc set[T](xs: seq[T], i: int, v: T): seq[T] =
+proc put[T](xs: seq[T], i: int, v: T): seq[T] =
   result = xs
   result[i] = v
 
-proc search(grid: seq[seq[char]], key: char): int =
+proc search(grid: Grid, key: char): int =
   let keyPoss = collect(newSeq):
-    for i, row in grid:
-      for j, v in row:
-        if v == key:
-          (i, j)
-  # Why can't I just declare the type here? Table[(seq[Coord], set[char]), int]
-  var cache = {(@[(0, 0)], {'a'}): 0}.toTable
-  proc go(starts: seq[Coord], found: set[char]): int =
+    for i, v in grid.arr:
+      if v == key:
+        i
+  var cache: Table[(seq[int], set[char]), int]
+  var cache2: Table[(set[char], int), seq[(char, int, int)]]
+  proc d2k(found: set[char], p: int): seq[(char, int, int)] =
+    if (found, p) in cache2:
+      return cache2[(found, p)]
+    result = grid.distsToKeys(found, p)
+    cache2[(found, p)] = result
+  proc go(starts: seq[int], found: set[char]): int =
     if (starts, found) in cache:
       return cache[(starts, found)]
     result = int.high
     for i, p in starts:
-      for (ch, snd) in distsToKeys(grid, found, p):
-        let (dist, pos) = snd
-        let m = dist + go(starts.set(i, pos), found + {ch})
+      for (ch, dist, pos) in d2k(found, p):
+        let m = dist + go(starts.put(i, pos), found + {ch})
         result = min(result, m)
     if result == int.high:
       result = 0
@@ -67,10 +72,11 @@ proc search(grid: seq[seq[char]], key: char): int =
   go(keyPoss, {})
 
 proc part1*(input: string): int =
-  input.parseMaze.search('@')
+  var maze = input.parseMaze
+  maze.search('@')
 
 proc part2*(input: string): int =
   var maze = input.parseMaze
   for (k, v) in toSeq(countup((39, 39), (41, 41))).zip("@#@###@#@"):
-    maze.get(k) = v
+    maze.arr[k[0] * maze.cols + k[1]] = v
   maze.search('@')
