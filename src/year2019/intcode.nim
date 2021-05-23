@@ -1,9 +1,10 @@
 import math
 import sequtils
 import strutils
+import sugar
 import tables
 
-type Memory = CountTable[int]
+type Memory = Table[int, int]
 
 proc parse*(input: string): Memory =
   let ns = input.split(',').map(parseInt)
@@ -48,32 +49,58 @@ proc parseInstr(mem: var Memory, idx: var int): Instr[(Mode, int)] =
       result = Instr[(Mode, int)](kind: Hlt)
     else: raiseAssert "Unknown op code: " & $mem[idx]
 
-proc run(mem: var Memory) =
-  var idx = 0
-  var rb = 0
-  while true:
-    let instr = mem.parseInstr(idx)
-    let args = instr.args.mapIt(case it[0]:
-                                  of Pos: mem[it[1]]
-                                  of Imm: it[1]
-                                  of Rel: mem[it[1]] + rb)
-    case instr.kind:
-      of Add: mem[args[2]] = mem[args[0]] + mem[args[1]]
-      of Mul: mem[args[2]] = mem[args[0]] * mem[args[1]]
-      of Sav: discard
-      of Out: discard
-      of Jit:
-        if mem[args[0]] != 0: idx = mem[args[1]]
-      of Jif:
-        if mem[args[0]] == 0: idx = mem[args[1]]
-      of Lt: mem[args[2]] = int(mem[args[0]] < mem[args[1]])
-      of Eql: mem[args[2]] = int(mem[args[0]] == mem[args[1]])
-      of Arb: rb += mem[args[0]]
-      of Hlt: break
+type
+  ActionKind = enum
+    Input, Output, Halt
+  Action = object
+    case kind: ActionKind
+    of Input: f: (int) -> void
+    of Output: v: int
+    of Halt: n: int
+
+proc run(mem: Memory): iterator: Action =
+  return iterator(): Action =
+    var mem = mem
+    var idx = 0
+    var rb = 0
+    while true:
+      let instr = mem.parseInstr(idx)
+      let args = instr.args.mapIt(case it[0]:
+                                    of Pos: mem.getOrDefault(it[1], 0)
+                                    of Imm: it[1]
+                                    of Rel: mem.getOrDefault(it[1], 0) + rb)
+      case instr.kind:
+        of Add: mem[args[2]] = mem.getOrDefault(args[0], 0) + mem.getOrDefault(args[1], 0)
+        of Mul: mem[args[2]] = mem.getOrDefault(args[0], 0) * mem.getOrDefault(args[1], 0)
+        of Sav:
+          var x = 0
+          yield Action(kind: Input, f: (y: int) => (x = y))
+          mem[args[0]] = x
+        of Out: yield Action(kind: Output, v: mem.getOrDefault(args[0], 0))
+        of Jit:
+          if mem.getOrDefault(args[0], 0) != 0: idx = mem.getOrDefault(args[1], 0)
+        of Jif:
+          if mem.getOrDefault(args[0], 0) == 0: idx = mem.getOrDefault(args[1], 0)
+        of Lt: mem[args[2]] = int(mem.getOrDefault(args[0], 0) < mem.getOrDefault(args[1], 0))
+        of Eql: mem[args[2]] = int(mem.getOrDefault(args[0], 0) == mem.getOrDefault(args[1], 0))
+        of Arb: rb += mem.getOrDefault(args[0], 0)
+        of Hlt:
+          yield Action(kind: Halt, n: mem[0])
+          break
 
 proc runNoIo*(mem: Memory, a, b: int): int =
   var mem = mem
   mem[1] = a
   mem[2] = b
-  mem.run
-  mem[0]
+  for a in mem.run:
+    result = a.n
+
+proc runWithInput*(mem: Memory, input: openArray[int]): seq[int] =
+  var i = 0
+  for action in mem.run:
+    case action.kind:
+      of Input:
+        action.f(input[i])
+        inc i
+      of Output: result.add(action.v)
+      of Halt: discard
