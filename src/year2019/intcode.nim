@@ -33,27 +33,33 @@ type
     Add, Mul, Sav, Out, Jit, Jif, Lt, Eql, Arb, Hlt
   Mode = enum
     Pos, Imm, Rel
-  Instr[T] = object
+  Instr = object
     kind: InstrKind
-    args: seq[T]
+    args: seq[int]
 
-proc getArgs(prog: var Program, n: int): seq[(Mode, int)] =
+proc `[]`(instr: Instr, i: int): int =
+  instr.args[i-1]
+
+proc getArgs(prog: var Program, n: int): seq[int] =
   for i in 1..n:
-    result &= (Mode(prog[prog.ip] div 10^(i+1) mod 10), prog.ip + i)
+    result &= (case Mode(prog[prog.ip] div 10^(i+1) mod 10):
+                 of Pos: prog[prog.ip + i]
+                 of Imm: prog.ip + i
+                 of Rel: prog[prog.ip + i] + prog.rb)
   prog.ip += n + 1
 
-proc parseInstr(prog: var Program): Instr[(Mode, int)] =
+proc parseInstr(prog: var Program): Instr =
   case prog[prog.ip] mod 100:
-    of 1: Instr[(Mode, int)](kind: Add, args: prog.getArgs(3))
-    of 2: Instr[(Mode, int)](kind: Mul, args: prog.getArgs(3))
-    of 3: Instr[(Mode, int)](kind: Sav, args: prog.getArgs(1))
-    of 4: Instr[(Mode, int)](kind: Out, args: prog.getArgs(1))
-    of 5: Instr[(Mode, int)](kind: Jit, args: prog.getArgs(2))
-    of 6: Instr[(Mode, int)](kind: Jif, args: prog.getArgs(2))
-    of 7: Instr[(Mode, int)](kind: Lt, args: prog.getArgs(3))
-    of 8: Instr[(Mode, int)](kind: Eql, args: prog.getArgs(3))
-    of 9: Instr[(Mode, int)](kind: Arb, args: prog.getArgs(1))
-    of 99: Instr[(Mode, int)](kind: Hlt)
+    of 1: Instr(kind: Add, args: prog.getArgs(3))
+    of 2: Instr(kind: Mul, args: prog.getArgs(3))
+    of 3: Instr(kind: Sav, args: prog.getArgs(1))
+    of 4: Instr(kind: Out, args: prog.getArgs(1))
+    of 5: Instr(kind: Jit, args: prog.getArgs(2))
+    of 6: Instr(kind: Jif, args: prog.getArgs(2))
+    of 7: Instr(kind: Lt, args: prog.getArgs(3))
+    of 8: Instr(kind: Eql, args: prog.getArgs(3))
+    of 9: Instr(kind: Arb, args: prog.getArgs(1))
+    of 99: Instr(kind: Hlt)
     else: raiseAssert "Unknown op code: " & $prog[prog.ip]
 
 proc send*(p: var Program, ins: openArray[int]) =
@@ -68,26 +74,22 @@ proc run*(p: var Program) =
   doAssert not p.done
   while true:
     let instr = p.parseInstr
-    let args = instr.args.mapIt(case it[0]:
-                                  of Pos: p[it[1]]
-                                  of Imm: it[1]
-                                  of Rel: p[it[1]] + p.rb)
     case instr.kind:
-      of Add: p[args[2]] = p[args[0]] + p[args[1]]
-      of Mul: p[args[2]] = p[args[0]] * p[args[1]]
+      of Add: p[instr[3]] = p[instr[1]] + p[instr[2]]
+      of Mul: p[instr[3]] = p[instr[1]] * p[instr[2]]
       of Sav:
         if p.input[].len == 0:
           p.ip -= 2
           break
-        p[args[0]] = p.input[].popFirst
-      of Out: p.output[].addLast(p[args[0]])
+        p[instr[1]] = p.input[].popFirst
+      of Out: p.output[].addLast(p[instr[1]])
       of Jit:
-        if p[args[0]] != 0: p.ip = p[args[1]]
+        if p[instr[1]] != 0: p.ip = p[instr[2]]
       of Jif:
-        if p[args[0]] == 0: p.ip = p[args[1]]
-      of Lt: p[args[2]] = int(p[args[0]] < p[args[1]])
-      of Eql: p[args[2]] = int(p[args[0]] == p[args[1]])
-      of Arb: p.rb += p[args[0]]
+        if p[instr[1]] == 0: p.ip = p[instr[2]]
+      of Lt: p[instr[3]] = int(p[instr[1]] < p[instr[2]])
+      of Eql: p[instr[3]] = int(p[instr[1]] == p[instr[2]])
+      of Arb: p.rb += p[instr[1]]
       of Hlt:
         p.done = true
         break
@@ -95,12 +97,8 @@ proc run*(p: var Program) =
 proc runIO*(p: var Program) =
   while true:
     p.run
-    while p.output[].len > 0:
-      let v = p.output[].popFirst
+    for v in p.recv:
       stdout.write(v.chr)
     if p.done:
       break
-    let cmd = stdin.readLine
-    for c in cmd:
-      p.input[].addLast(c.ord)
-    p.input[].addLast('\n'.ord)
+    p.send((stdin.readLine & "\n").mapIt(it.ord))
