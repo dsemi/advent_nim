@@ -84,3 +84,16 @@ proc run*(p: var Program) =
       of Hlt:
         p.done = true
         break
+
+proc runIO*(p: var Program) =
+  while true:
+    p.run
+    while p.output[].len > 0:
+      let v = p.output[].popFirst
+      stdout.write(v.chr)
+    if p.done:
+      break
+    let cmd = stdin.readLine
+    for c in cmd:
+      p.input[].addLast(c.ord)
+    p.input[].addLast('\n'.ord)
