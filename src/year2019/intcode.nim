@@ -1,15 +1,33 @@
+import deques
 import math
 import sequtils
 import strutils
 import sugar
 import tables
 
-type Memory = Table[int, int]
+type Queue = ref Deque[int]
 
-proc parse*(input: string): Memory =
+type Program* = object
+  mem: Table[int, int]
+  ip*: int
+  rb: int
+  input*: Queue
+  output*: Queue
+  done*: bool
+
+proc parse*(input: string): Program =
   let ns = input.split(',').map(parseInt)
+  var mem: Table[int, int]
   for i, n in ns:
-    result[i] = n
+    mem[i] = n
+  Program(mem: mem, input: new Queue, output: new Queue)
+
+proc `[]`*(p: Program, k: int): int =
+  if k in p.mem: p.mem[k]
+  else: 0
+
+proc `[]=`*(p: var Program, k: int, v: sink int) =
+  p.mem[k] = v
 
 type
   InstrKind = enum
@@ -20,87 +38,49 @@ type
     kind: InstrKind
     args: seq[T]
 
-proc getArgs(mem: var Memory, idx: var int, n: int): seq[(Mode, int)] =
+proc getArgs(prog: var Program, n: int): seq[(Mode, int)] =
   for i in 1..n:
-    result &= (Mode(mem[idx] div 10^(i+1) mod 10), idx + i)
-  idx += n + 1
+    result &= (Mode(prog[prog.ip] div 10^(i+1) mod 10), prog.ip + i)
+  prog.ip += n + 1
 
-proc parseInstr(mem: var Memory, idx: var int): Instr[(Mode, int)] =
-  case mem[idx] mod 100:
-    of 1:
-      result = Instr[(Mode, int)](kind: Add, args: mem.getArgs(idx, 3))
-    of 2:
-      result = Instr[(Mode, int)](kind: Mul, args: mem.getArgs(idx, 3))
-    of 3:
-      result = Instr[(Mode, int)](kind: Sav, args: mem.getArgs(idx, 1))
-    of 4:
-      result = Instr[(Mode, int)](kind: Out, args: mem.getArgs(idx, 1))
-    of 5:
-      result = Instr[(Mode, int)](kind: Jit, args: mem.getArgs(idx, 2))
-    of 6:
-      result = Instr[(Mode, int)](kind: Jif, args: mem.getArgs(idx, 2))
-    of 7:
-      result = Instr[(Mode, int)](kind: Lt, args: mem.getArgs(idx, 3))
-    of 8:
-      result = Instr[(Mode, int)](kind: Eql, args: mem.getArgs(idx, 3))
-    of 9:
-      result = Instr[(Mode, int)](kind: Arb, args: mem.getArgs(idx, 1))
-    of 99:
-      result = Instr[(Mode, int)](kind: Hlt)
-    else: raiseAssert "Unknown op code: " & $mem[idx]
+proc parseInstr(prog: var Program): Instr[(Mode, int)] =
+  case prog[prog.ip] mod 100:
+    of 1: Instr[(Mode, int)](kind: Add, args: prog.getArgs(3))
+    of 2: Instr[(Mode, int)](kind: Mul, args: prog.getArgs(3))
+    of 3: Instr[(Mode, int)](kind: Sav, args: prog.getArgs(1))
+    of 4: Instr[(Mode, int)](kind: Out, args: prog.getArgs(1))
+    of 5: Instr[(Mode, int)](kind: Jit, args: prog.getArgs(2))
+    of 6: Instr[(Mode, int)](kind: Jif, args: prog.getArgs(2))
+    of 7: Instr[(Mode, int)](kind: Lt, args: prog.getArgs(3))
+    of 8: Instr[(Mode, int)](kind: Eql, args: prog.getArgs(3))
+    of 9: Instr[(Mode, int)](kind: Arb, args: prog.getArgs(1))
+    of 99: Instr[(Mode, int)](kind: Hlt)
+    else: raiseAssert "Unknown op code: " & $prog[prog.ip]
 
-type
-  ActionKind = enum
-    Input, Output, Halt
-  Action = object
-    case kind: ActionKind
-    of Input: f: (int) -> void
-    of Output: v: int
-    of Halt: n: int
-
-proc run(mem: Memory): iterator: Action =
-  return iterator(): Action =
-    var mem = mem
-    var idx = 0
-    var rb = 0
-    while true:
-      let instr = mem.parseInstr(idx)
-      let args = instr.args.mapIt(case it[0]:
-                                    of Pos: mem.getOrDefault(it[1], 0)
-                                    of Imm: it[1]
-                                    of Rel: mem.getOrDefault(it[1], 0) + rb)
-      case instr.kind:
-        of Add: mem[args[2]] = mem.getOrDefault(args[0], 0) + mem.getOrDefault(args[1], 0)
-        of Mul: mem[args[2]] = mem.getOrDefault(args[0], 0) * mem.getOrDefault(args[1], 0)
-        of Sav:
-          var x = 0
-          yield Action(kind: Input, f: (y: int) => (x = y))
-          mem[args[0]] = x
-        of Out: yield Action(kind: Output, v: mem.getOrDefault(args[0], 0))
-        of Jit:
-          if mem.getOrDefault(args[0], 0) != 0: idx = mem.getOrDefault(args[1], 0)
-        of Jif:
-          if mem.getOrDefault(args[0], 0) == 0: idx = mem.getOrDefault(args[1], 0)
-        of Lt: mem[args[2]] = int(mem.getOrDefault(args[0], 0) < mem.getOrDefault(args[1], 0))
-        of Eql: mem[args[2]] = int(mem.getOrDefault(args[0], 0) == mem.getOrDefault(args[1], 0))
-        of Arb: rb += mem.getOrDefault(args[0], 0)
-        of Hlt:
-          yield Action(kind: Halt, n: mem[0])
+proc run*(p: var Program) =
+  doAssert not p.done
+  while true:
+    let instr = p.parseInstr
+    let args = instr.args.mapIt(case it[0]:
+                                  of Pos: p[it[1]]
+                                  of Imm: it[1]
+                                  of Rel: p[it[1]] + p.rb)
+    case instr.kind:
+      of Add: p[args[2]] = p[args[0]] + p[args[1]]
+      of Mul: p[args[2]] = p[args[0]] * p[args[1]]
+      of Sav:
+        if p.input[].len == 0:
+          p.ip -= 2
           break
-
-proc runNoIo*(mem: Memory, a, b: int): int =
-  var mem = mem
-  mem[1] = a
-  mem[2] = b
-  for a in mem.run:
-    result = a.n
-
-proc runWithInput*(mem: Memory, input: openArray[int]): seq[int] =
-  var i = 0
-  for action in mem.run:
-    case action.kind:
-      of Input:
-        action.f(input[i])
-        inc i
-      of Output: result.add(action.v)
-      of Halt: discard
+        p[args[0]] = p.input[].popFirst
+      of Out: p.output[].addLast(p[args[0]])
+      of Jit:
+        if p[args[0]] != 0: p.ip = p[args[1]]
+      of Jif:
+        if p[args[0]] == 0: p.ip = p[args[1]]
+      of Lt: p[args[2]] = int(p[args[0]] < p[args[1]])
+      of Eql: p[args[2]] = int(p[args[0]] == p[args[1]])
+      of Arb: p.rb += p[args[0]]
+      of Hlt:
+        p.done = true
+        break
