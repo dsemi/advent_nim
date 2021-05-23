@@ -2,7 +2,6 @@ import deques
 import math
 import sequtils
 import strutils
-import sugar
 import tables
 
 type Queue = ref Deque[int]
@@ -56,6 +55,14 @@ proc parseInstr(prog: var Program): Instr[(Mode, int)] =
     of 9: Instr[(Mode, int)](kind: Arb, args: prog.getArgs(1))
     of 99: Instr[(Mode, int)](kind: Hlt)
     else: raiseAssert "Unknown op code: " & $prog[prog.ip]
+
+proc send*(p: var Program, ins: openArray[int]) =
+  for v in ins:
+    p.input[].addLast(v)
+
+iterator recv*(p: var Program): int =
+  while p.output[].len > 0:
+    yield p.output[].popFirst
 
 proc run*(p: var Program) =
   doAssert not p.done

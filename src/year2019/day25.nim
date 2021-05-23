@@ -1,5 +1,5 @@
 import nre
-import deques
+import sequtils
 import strutils
 
 import "intcode"
@@ -25,11 +25,10 @@ const instrs = [
 
 proc part1*(input: string): string =
   var prog = input.parse
-  for c in instrs:
-    prog.input[].addLast(c.ord)
+  prog.send(instrs.mapIt(it.ord))
   prog.run
   var s = ""
-  for v in prog.output[]:
+  for v in prog.recv:
     s &= v.chr
   for m in s.findIter(re"\d+"):
     result = m.match

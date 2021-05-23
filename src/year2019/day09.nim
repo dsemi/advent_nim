@@ -1,15 +1,15 @@
-import deques
-
 import "intcode"
 
 proc part1*(input: string): int =
   var prog = input.parse
-  prog.input[].addLast(1)
+  prog.send([1])
   prog.run
-  prog.output[][0]
+  for o in prog.recv:
+    return o
 
 proc part2*(input: string): int =
   var prog = input.parse
-  prog.input[].addLast(2)
+  prog.send([2])
   prog.run
-  prog.output[][0]
+  for o in prog.recv:
+    return o

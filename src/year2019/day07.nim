@@ -1,4 +1,3 @@
-import deques
 import itertools
 
 import "intcode"
@@ -12,16 +11,15 @@ proc chain(prog: Program, phases: seq[int], cycle: bool = false): seq[int] =
   for i in progs.low..progs.high-1:
     progs[i+1].input = progs[i].output
   for i, p in phases:
-    progs[i].input[].addLast(p)
-  progs[0].input[].addLast(0)
+    progs[i].send([p])
+  progs[0].send([0])
   while true:
     for prog in progs.mitems:
       if prog.done: return result
       prog.run
-    while progs[^1].output[].len > 0:
-      let v = progs[^1].output[].popFirst
+    for v in progs[^1].recv:
       if cycle:
-        progs[0].input[].addLast(v)
+        progs[0].send([v])
       result.add(v)
 
 proc part1*(input: string): int =
