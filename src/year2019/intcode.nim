@@ -1,7 +1,9 @@
 import deques
 import math
+import options
 import sequtils
 import strutils
+import sugar
 import tables
 
 type Queue = ref Deque[int]
@@ -69,6 +71,16 @@ proc send*(p: var Program, ins: openArray[int]) =
 iterator recv*(p: var Program): int =
   while p.output[].len > 0:
     yield p.output[].popFirst
+
+proc recv*(p: var Program, n: int): Option[seq[int]] =
+  if p.output[].len >= n:
+    let res = collect(newSeq):
+      for _ in 1..n:
+        p.output[].popFirst
+    return some(res)
+
+proc hasOuts*(p: var Program, n: int): bool =
+  p.output[].len >= n
 
 proc run*(p: var Program) =
   doAssert not p.done
