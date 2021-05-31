@@ -106,6 +106,13 @@ proc run*(p: var Program) =
         p.done = true
         break
 
+proc runNoIo*(p: Program, a, b: int): int =
+  var p = p
+  p[1] = a
+  p[2] = b
+  p.run
+  p[0]
+
 proc runIO*(p: var Program) =
   while true:
     p.run
