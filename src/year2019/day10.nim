@@ -41,9 +41,11 @@ proc part1*(input: string): int =
 proc part2*(input: string): int =
   var m = input.parse.maxDetected
   var i = 0
-  while i < 200:
-    if m[i].len > 0:
-      let (a, b) = m[i][0]
-      result = 100 * a + b
-      m[i] = m[i][1..^1]
-      inc i
+  while true:
+    for pts in m.mitems:
+      if pts.len > 0:
+        inc i
+        if i == 200:
+          let (a, b) = pts[0]
+          return 100 * a + b
+        pts = pts[1..^1]

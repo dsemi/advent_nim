@@ -61,10 +61,9 @@ proc parseBoss(input: string): Game =
 
 proc minCostToWin(s: Game, hard: bool): int =
   var states = @[s]
-  var state: Game
   result = int.high
   while states.len > 0:
-    state = states.pop
+    var state = states.pop
     if hard:
       state.playerHealth -= 1
       if state.playerHealth <= 0:
