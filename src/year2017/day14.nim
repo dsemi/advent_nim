@@ -38,11 +38,11 @@ proc part1*(input: string): int =
 proc grid(bss: seq[seq[int]]): HashSet[Coord] =
   for r, bs in bss:
     for c, w in bs:
-      for i in countdown(7, 0):
+      for i in 0..7:
         if w.testBit(i):
           result.incl((r, c*8 + 7 - i))
 
-proc adjacents(c: (int, int)): seq[Coord] =
+proc adjacents(c: Coord): seq[Coord] =
   for d in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
     let c2 = c + d
     if c2[0] >= 0 and c2[0] < 128 and c2[1] >= 0 and c2[1] < 128:

@@ -1,5 +1,6 @@
 import algorithm
 import sequtils
+import strscans
 import strutils
 import tables
 
@@ -18,9 +19,11 @@ proc parseScans(input: string): Ground =
   var clay: seq[Coord]
   for line in input.splitLines:
     var t: Table[char, seq[int]]
-    for part in line.split(", "):
-      let ns = part[2..^1].split("..").map(parseInt)
-      t[part[0]] = if ns.len == 1: ns else: toSeq(ns[0]..ns[1])
+    var c1, c2: char
+    var v1, v2a, v2b: int
+    doAssert line.scanf("${c}=$i, ${c}=$i..$i", c1, v1, c2, v2a, v2b)
+    t[c1] = @[v1]
+    t[c2] = toSeq(v2a..v2b)
     for x in t['x']:
       for y in t['y']:
         clay.add((x, y))

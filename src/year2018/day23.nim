@@ -25,7 +25,7 @@ proc part1*(input: string): int =
     result += maxBot.inRange(bot.pos).int
 
 proc part2*(input: string): int =
-  var ns = input.parseNanobots
+  let ns = input.parseNanobots
   var n = 10_000_000
   var minCoord = floorDiv(ns.mapIt(it.pos).foldl((min(a[0], b[0]), min(a[1], b[1]), min(a[2], b[2]))), n)
   var maxCoord = floorDiv(ns.mapIt(it.pos).foldl((max(a[0], b[0]), max(a[1], b[1]), max(a[2], b[2]))), n)

@@ -24,7 +24,6 @@ proc parseExpansions(input: string): Table[Grid, Grid] =
       result[grid] = v
 
 proc sqr(grid: Grid, i, j, span: int): Grid =
-  var row = 0
   for x in i ..< i+span:
     result.add(grid[x][j..<j+span])
 

@@ -33,16 +33,14 @@ proc step(p: var Particle) =
   p.vel += p.acc
   p.pos += p.vel
 
-proc removeCollisions(ps: seq[Particle]): seq[Particle] =
+proc removeCollisions(ps: var seq[Particle]) =
   let tbl = ps.mapIt(it.pos).toCountTable
-  for p in ps:
-    if tbl[p.pos] == 1:
-      result.add(p)
+  ps.keepItIf(tbl[it.pos] == 1)
 
 proc part2*(input: string): int =
   var ps = input.parseParticles
   for _ in 1..100:
     for p in ps.mitems:
       p.step
-    ps = ps.removeCollisions
+    ps.removeCollisions
   ps.len

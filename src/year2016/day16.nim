@@ -1,4 +1,3 @@
-import algorithm
 import math
 import sequtils
 import strutils
@@ -11,12 +10,11 @@ proc dragonChecksum(desiredLen: int, input: string): string =
              desiredLen div x
   var ns = input.mapIt(($it).parseInt)
   while ns.len < desiredLen:
-    var ns2 = ns
-    ns2.add(0)
-    ns2.add(ns.reversed.mapIt(it xor 1))
-    ns = ns2
-  ns = ns[0..<desiredLen]
-  for n in countup(0, ns.high, sz):
+    let c = ns.len
+    ns.add(0)
+    for i in countdown(c-1, 0):
+      ns.add(ns[i] xor 1)
+  for n in countup(0, desired_len - 1, sz):
     if ns[n..<n+sz].sum mod 2 == 1:
       result &= "0"
     else:

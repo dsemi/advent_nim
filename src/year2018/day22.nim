@@ -26,7 +26,7 @@ proc parse(input: string): (int, Coord) =
 
 proc erosionLevels(depth: int, target: Coord): seq[seq[Tool]] =
   let mx = max(target[0], target[1]) + 3 # Arbitrary buffer size for search
-  var arr = newSeqWith(mx + 1, newSeq[int](mx + 1))
+  var arr = newSeqWith(mx, newSeq[int](mx))
   for x in 0..<mx:
     for y in 0..<mx:
       let geologicIndex = if (x, y) == target:
@@ -38,7 +38,7 @@ proc erosionLevels(depth: int, target: Coord): seq[seq[Tool]] =
                           else:
                             arr[x-1][y] * arr[x][y-1]
       arr[x][y] = (geologicIndex + depth) mod 20183
-  result = newSeqWith(mx + 1, newSeq[Tool](mx + 1))
+  result = newSeqWith(mx, newSeq[Tool](mx))
   for x in 0..<mx:
     for y in 0..<mx:
       result[x][y] = Tool(arr[x][y] mod 3)

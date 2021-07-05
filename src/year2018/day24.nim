@@ -79,7 +79,7 @@ proc attack(groups: var Table[int, Group], atks: seq[(int, int)]): bool =
       let g1 = groups[k1]
       let g2 = groups[k2]
       let unitsLeft = g2.numUnits - g1.calcDmg(g2) div g2.hitPts
-      if unitsLeft != groups[k2].numUnits:
+      if unitsLeft != g2.numUnits:
         result = true
       if unitsLeft <= 0:
         groups.del(k2)

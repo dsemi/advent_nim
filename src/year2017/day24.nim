@@ -9,9 +9,6 @@ type
     a: int
     b: int
     used: bool
-  Bridge = tuple
-    pins: int
-    pipes: seq[Pipe]
 
 proc parsePipes(input: string): seq[Pipe] =
   for line in input.splitLines:

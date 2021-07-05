@@ -8,7 +8,7 @@ proc parseLandscape(input: string): seq[seq[char]] =
   for line in input.splitLines:
     result.add(toSeq(line))
 
-proc neighbors[T](grid: var seq[seq[T]], c: Coord): seq[char] =
+proc neighbors[T](grid: var seq[seq[T]], c: Coord): seq[T] =
   for d in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]:
     let c2 = c + d
     if c2[0] in grid.low..grid.high and c2[1] in grid[c2[0]].low..grid[c2[0]].high:

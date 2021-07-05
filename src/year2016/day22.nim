@@ -26,9 +26,6 @@ proc part1*(input: string): int =
          nodes[j].used > 0 and nodes[j].used < nodes[i].avail:
         inc result
 
-proc heur(st: (Coord, Coord)): int =
-  (st[1] - st[0]).abs.sum + ((0, 0) - st[1]).abs.sum
-
 proc part2*(input: string): int =
   let nodes = input.splitLines[2..^1].map(parseNode)
   var grid: Table[Coord, Node]

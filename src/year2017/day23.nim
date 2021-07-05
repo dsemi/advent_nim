@@ -88,7 +88,7 @@ proc run(p: var Prog; debug: bool = false): int =
           p.reg[innerCounter.r] = v
           p.reg[outerCounter.r] = v
           p.reg[workspace.r] = 0
-          p.reg[primeCheck.r] = if v.isPrime: 1 else: 0
+          p.reg[primeCheck.r] = int(v.isPrime)
           p.line += 14
           continue
     let instr = p.instrs[p.line]
