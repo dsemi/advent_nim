@@ -1,82 +1,102 @@
 import deques
-import sequtils
+import heapqueue
 import intsets
+import sequtils
 import strutils
 import sugar
 import tables
 
 import "../utils"
 
-type Grid = ref object
-  arr: seq[char]
-  cols: int
+type
+  Edge = object
+    dest: int
+    doors: uint32
+    keys: uint32
+    len: int
 
-proc parseMaze(input: string): Grid =
+  Maze = ref object
+    grid: seq[char]
+    cols: int
+    moves: Table[int, seq[Edge]]
+
+  State = ref object
+    poss: seq[int]
+    keys: uint32
+    len: int
+
+proc conv(c: char): uint32 =
+  uint32(1 shl (c.ord - 'a'.ord))
+
+proc parseMaze(input: string): Maze =
   var arr: seq[char]
   var cols: int
   for row in input.splitLines:
     cols = row.len
     arr.add(row)
-  Grid(arr: arr, cols: cols)
+  Maze(grid: arr, cols: cols)
 
-proc distsToKeys(grid: Grid, found: set[char], start: int): seq[(char, int, int)] =
-  proc neighbors(node: (int, int)): seq[(int, int)] =
-    let (pos, depth) = node
-    for d in [-grid.cols, -1, 1, grid.cols]:
-      let p2 = pos + d
-      let v = grid.arr[p2]
-      if v != '#' and (not v.isUpperAscii or v.toLowerAscii in found):
-        result.add((p2, depth + 1))
+proc availableMoves(maze: Maze, src: int): seq[Edge] =
+  if src notin maze.moves:
+    var moves: seq[Edge]
+    var visited: IntSet
+    var queue: Deque[Edge]
+    queue.addLast(Edge(dest: src, doors: 0, keys: 0, len: 0))
+    while queue.len > 0:
+      let edge = queue.popFirst
+      if edge.dest in visited:
+        continue
+      visited.incl(edge.dest)
+      for p in [edge.dest - maze.cols, edge.dest - 1, edge.dest + 1, edge.dest + maze.cols]:
+        if p != src and maze.grid[p] != '#':
+          var edge = Edge(dest: p, doors: edge.doors, keys: edge.keys, len: edge.len + 1)
+          let ch = maze.grid[p]
+          case ch:
+            of 'a'..'z':
+              edge.keys = edge.keys or ch.conv
+              moves.add(edge)
+            of 'A'..'Z':
+              edge.doors = edge.doors or ch.toLowerAscii.conv
+            else:
+              discard
+          queue.addLast(edge)
+    maze.moves[src] = moves
+  maze.moves[src]
 
-  var visited = [start].toIntSet
-  var frontier = (start, 0).neighbors.toDeque
-  while frontier.len > 0:
-    let (pos, depth) = frontier.popFirst
-    if pos in visited:
-      continue
-    visited.incl(pos)
-    let k = grid.arr[pos]
-    if k.isLowerAscii and k notin found:
-      result.add((k, depth, pos))
-    else:
-      for neighb in (pos, depth).neighbors:
-        frontier.addLast(neighb)
+proc `<`(a, b: State): bool =
+  a.len < b.len
 
-proc put[T](xs: seq[T], i: int, v: T): seq[T] =
-  result = xs
-  result[i] = v
-
-proc search(grid: Grid, key: char): int =
-  let keyPoss = collect(newSeq):
-    for i, v in grid.arr:
-      if v == key:
+proc search(maze: Maze, start: char): int =
+  let startPoss = collect(newSeq):
+    for i, v in maze.grid:
+      if v == start:
         i
-  var cache: Table[(seq[int], set[char]), int]
-  var cache2: Table[(set[char], int), seq[(char, int, int)]]
-  proc d2k(found: set[char], p: int): seq[(char, int, int)] =
-    if (found, p) in cache2:
-      return cache2[(found, p)]
-    result = grid.distsToKeys(found, p)
-    cache2[(found, p)] = result
-  proc go(starts: seq[int], found: set[char]): int =
-    if (starts, found) in cache:
-      return cache[(starts, found)]
-    result = int.high
-    for i, p in starts:
-      for (ch, dist, pos) in d2k(found, p):
-        let m = dist + go(starts.put(i, pos), found + {ch})
-        result = min(result, m)
-    if result == int.high:
-      result = 0
-    cache[(starts, found)] = result
-  go(keyPoss, {})
+  let ks = maze.grid.filterIt(it.isLowerAscii).mapIt(it.conv).foldl(a or b)
+  var queue: HeapQueue[State]
+  var dists: Table[(seq[int], uint32), int]
+  queue.push(State(poss: startPoss, keys: 0, len: 0))
+  while queue.len > 0:
+    let state = queue.pop
+    if state.keys == ks:
+      return state.len
+    if state.len <= dists.getOrDefault((state.poss, state.keys), int.high):
+      dists[(state.poss, state.keys)] = state.len
+      for i, p in state.poss:
+        for edge in maze.availableMoves(p):
+          if (state.keys and edge.doors) == edge.doors and (state.keys and edge.keys) != edge.keys:
+            var poss = state.poss
+            poss[i] = edge.dest
+            let keys = state.keys or edge.keys
+            let len = state.len + edge.len
+            if len < dists.getOrDefault((poss, keys), int.high):
+              dists[(poss, keys)] = len
+              queue.push(State(poss: poss, keys: keys, len: len))
 
 proc part1*(input: string): int =
-  var maze = input.parseMaze
-  maze.search('@')
+  input.parseMaze.search('@')
 
 proc part2*(input: string): int =
   var maze = input.parseMaze
   for (k, v) in toSeq(countup((39, 39), (41, 41))).zip("@#@###@#@"):
-    maze.arr[k[0] * maze.cols + k[1]] = v
+    maze.grid[k[0] * maze.cols + k[1]] = v
   maze.search('@')
