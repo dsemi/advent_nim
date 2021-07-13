@@ -4,12 +4,11 @@ import options
 import sequtils
 import strutils
 import sugar
-import tables
 
 type Queue = ref Deque[int]
 
 type Program* = object
-  mem: Table[int, int]
+  mem: seq[int]
   ip*: int
   rb: int
   input*: Queue
@@ -17,17 +16,16 @@ type Program* = object
   done*: bool
 
 proc parse*(input: string): Program =
-  let ns = input.split(',').map(parseInt)
-  var mem: Table[int, int]
-  for i, n in ns:
-    mem[i] = n
+  let mem = input.split(',').map(parseInt)
   Program(mem: mem, input: new Queue, output: new Queue)
 
 proc `[]`*(p: Program, k: int): int =
-  if k in p.mem: p.mem[k]
+  if k in p.mem.low..p.mem.high: p.mem[k]
   else: 0
 
 proc `[]=`*(p: var Program, k: int, v: sink int) =
+  while k > p.mem.high:
+    p.mem.add(0)
   p.mem[k] = v
 
 type
