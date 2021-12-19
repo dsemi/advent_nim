@@ -5,6 +5,11 @@ import strutils
 import sugar
 import tables
 
+# Use SomeNumber
+# Could implement a `to` function for each type
+# Then add concept for something that has a `to` and recv that in wrap
+# Would allow for tuples of any valid type
+
 proc wrap(f: (string) -> string): (string) -> string = f
 
 proc wrap(f: (string) -> int): (string) -> string =
@@ -26,7 +31,7 @@ proc wrap(f: (string) -> (int, int, int)): (string) -> string =
     let (a, b, c) = f(inp)
     $a & "," & $b & "," & $c
 
-macro genProblems(s: varargs[string]): untyped =
+macro genProblems(s: untyped): untyped =
   result = newNimNode(nnkStmtList)
   var tbl = newNimNode(nnkTableConstr)
   for _, dir in walkDir("src"):
@@ -48,4 +53,6 @@ macro genProblems(s: varargs[string]): untyped =
   result.add(newLetStmt(postfix(ident("probs"), "*"), newCall("toTable", tbl)))
 
 # No idea why this works only when a string is provided
+# I think something to do with getting the context from where the macro is run
+# Check dumpAstGen
 genProblems("wat")

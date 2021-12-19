@@ -21,6 +21,9 @@ proc downloadInput(url: string, outFile: string) =
   let cookie = getEnv("AOC_SESSION")
   var client = newHttpClient()
   client.headers = newHttpHeaders({"Cookie": cookie})
+  let dir = parentDir(outFile)
+  if not dirExists(dir):
+    createDir(dir)
   downloadFile(client, url, outFile)
   lastCall = getTime()
 
