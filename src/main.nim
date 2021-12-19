@@ -52,12 +52,12 @@ proc timeit(f: (string) -> string, inp: string): (string, float) =
   return (ans, float(t.inMicroseconds) / 1_000_000)
 
 proc run(year: int, day: int): float =
+  if year notin probs or day notin probs[year]:
+    echo fmt"{year} Day {day} not implemented"
+    return 0
   let contents = getInput(year, day)
   echo fmt"Day {day}"
   let outstr = "Part $1: $2  Elapsed time $3 seconds"
-  if year notin probs or day notin probs[year]:
-    echo "Not implemented"
-    return 0
   let (ans1, t1) = timeit(probs[year][day][0], contents)
   echo outstr.format(1, align(ans1, 32), colorizeTime(t1))
   let (ans2, t2) = timeit(probs[year][day][1], contents)
