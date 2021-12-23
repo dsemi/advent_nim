@@ -16,7 +16,7 @@ proc rotChrIdx(i: int): int =
 
 proc move(s: var string, i, j: int) =
   let c = s[i]
-  s.delete(i, i)
+  s.delete(i..i)
   s.insert($c, j)
 
 proc runProgram(input: string, instrs: seq[string], invert: bool = false): string =
