@@ -54,5 +54,5 @@ macro genProblems(s: untyped): untyped =
 
 # No idea why this works only when a string is provided
 # I think something to do with getting the context from where the macro is run
-# Check dumpAstGen
+# Check dumpAstGen, dumpTree
 genProblems("wat")

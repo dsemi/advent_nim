@@ -45,6 +45,9 @@ proc abs*(p: Coord): Coord =
 proc sum*(p: Coord): int =
   p.x + p.y
 
+proc sgn*(p: Coord): Coord =
+  (p.x.sgn, p.y.sgn)
+
 iterator countup*(a, b: Coord): Coord =
   for x in countup(a.x, b.x):
     for y in countup(a.y, b.y):
