@@ -1,4 +1,5 @@
 import macros
+import options
 import os
 import strformat
 import strutils
@@ -20,6 +21,9 @@ proc wrap(f: (string) -> int64): (string) -> string =
 
 proc wrap(f: (string) -> uint16): (string) -> string =
   return proc(inp: string): string = $f(inp)
+
+proc wrap(f: (string) -> Option[int]): (string) -> string =
+  return proc(inp: string): string = $f(inp).get
 
 proc wrap(f: (string) -> (int, int)): (string) -> string =
   return proc(inp: string): string =

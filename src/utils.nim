@@ -193,6 +193,21 @@ iterator bfs*[T](start: T, neighbors: T -> (iterator: T)): (int, T) =
         visited.incl(st2)
         frontier.addLast((d+1, st2))
 
+iterator dijkstra*[T](start: T, neighbs: T -> (iterator: (int, T))): (int, T) =
+  var dists: Table[T, int]
+  var queue = [(0, start)].toHeapQueue
+  while queue.len > 0:
+    let (d, st) = queue.pop
+    yield (d, st)
+    let shortest = dists.mgetOrPut(st, d)
+    if d <= dists.getOrDefault(st, int.high):
+      dists[st] = d
+      for (d2, st2) in neighbs(st):
+        let dist = d + d2
+        if dist < dists.getOrDefault(st2, dist + 1):
+          dists[st2] = dist
+          queue.push((dist, st2))
+
 proc aStar*[T](neighbors: T -> (iterator: T), dist: (T, T) -> int, heur: T -> int, goal: T -> bool, start: T): seq[T] =
   var visited = [start].toHashSet
   var queue = [(0, start)].toHeapQueue
