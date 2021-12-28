@@ -2,6 +2,7 @@ import fusion/matching
 import httpclient
 import os
 import sequtils
+import std/monotimes
 import strformat
 import strutils
 import sugar
@@ -43,9 +44,9 @@ proc colorizeTime(t: float): string =
   return ansiForegroundColorCode(fgRed) & s & ansiResetCode
 
 proc timeit(f: (string) -> string, inp: string): (string, float) =
-  let startT = getTime()
+  let startT = getMonoTime()
   var ans = f(inp)
-  let endT = getTime()
+  let endT = getMonoTime()
   if ans == "":
     ans = "Not implemented"
   let t = endT - startT
