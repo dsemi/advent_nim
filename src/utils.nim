@@ -87,6 +87,9 @@ proc abs*(p: Coord3): Coord3 =
 proc sum*(p: Coord3): int =
   p.x + p.y + p.z
 
+proc min*(a, b: Coord3): Coord3 =
+  (min(a.x, b.x), min(a.y, b.y), min(a.z, b.z))
+
 iterator countup*(a, b: Coord3): Coord3 =
   for x in countup(a.x, b.x):
     for y in countup(a.y, b.y):
@@ -207,6 +210,13 @@ iterator dijkstra*[T](start: T, neighbs: T -> (iterator: (int, T))): (int, T) =
         if dist < dists.getOrDefault(st2, dist + 1):
           dists[st2] = dist
           queue.push((dist, st2))
+
+iterator dijkstra*[T](start: T, neighbs: T -> seq[(int, T)]): (int, T) =
+ for x in  dijkstra(start, proc(s: T): iterator(): (int, T) =
+                            return iterator(): (int, T) =
+                              for n in neighbs(s):
+                                yield n):
+   yield x
 
 proc aStar*[T](neighbors: T -> (iterator: T), dist: (T, T) -> int, heur: T -> int, goal: T -> bool, start: T): seq[T] =
   var visited = [start].toHashSet
