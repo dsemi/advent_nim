@@ -1,18 +1,17 @@
-import itertools
 import math
 import sequtils
 import strutils
+
+import "../utils.nim"
 
 proc parse(input: string): seq[int64] =
   input.splitlines.map(parseBiggestInt)
 
 proc findFirstInvalid(ns: seq[int64]): int64 =
-  for n in count(25):
-    var any = false
-    for combo in combinations(ns[n-25 ..< n], 2):
-      if combo.sum == ns[n]:
-        any = true
-        break
+  for n in 25 .. int.high:
+    let any = combos(bool, ns[n-25 ..< n], 2):
+      if buf[].sum == ns[n]:
+        cbreak true
     if not any:
       return ns[n]
 

@@ -15,7 +15,7 @@ iterator findIndexes(seed: string, num: int = 0): int =
   for i1 in countup(0, int.high, batchSize):
     var arr = newSeq[FlowVar[string]](batchSize)
     parallel:
-      for i in 0..<arr.len:
+      for i in 0 .. arr.high:
         arr[i] = spawn hashNum(seed, i+i1, num)
     for i in i1..<i1+batchSize:
       let hash = ^arr[i-i1]

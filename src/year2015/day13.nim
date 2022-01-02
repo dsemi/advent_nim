@@ -1,4 +1,4 @@
-import itertools
+import algorithm
 import math
 import sequtils
 import strutils
@@ -21,12 +21,15 @@ proc parse(input: string): seq[seq[int]] =
     result[d[p1]][d[p2]] = n
 
 proc optimal(d: seq[seq[int]]): int =
-  for perm in permutations(toSeq(d.low..d.high)):
+  var perm = toSeq(d.low..d.high)
+  var run = true
+  while run:
     var t = 0
     for i in perm.low .. perm.high:
       t += d[perm[i]][perm[(i+1) mod perm.len]] +
            d[perm[(i+1) mod perm.len]][perm[i]]
     result = max(result, t)
+    run = perm.nextPermutation
 
 proc part1*(input: string): int =
   optimal(parse(input))

@@ -1,4 +1,4 @@
-import itertools
+import algorithm
 
 import "intcode"
 
@@ -24,10 +24,16 @@ proc chain(prog: Program, phases: seq[int], cycle: bool = false): seq[int] =
 
 proc part1*(input: string): int =
   let prog = input.parse
-  for perm in [0, 1, 2, 3, 4].permutations:
+  var perm = @[0, 1, 2, 3, 4]
+  var run = true
+  while run:
     result = max(result, prog.chain(perm)[0])
+    run = perm.nextPermutation
 
 proc part2*(input: string): int =
   let prog = input.parse
-  for perm in [5, 6, 7, 8, 9].permutations:
+  var perm = @[5, 6, 7, 8, 9]
+  var run = true
+  while run:
     result = max(result, prog.chain(perm, cycle = true)[^1])
+    run = perm.nextPermutation

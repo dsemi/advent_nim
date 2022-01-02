@@ -249,6 +249,19 @@ proc seqToIter*[T](xs: seq[T]): iterator: T =
     for x in xs:
       yield x
 
+template combos*[T](xs: seq[T], num: int, body: untyped) =
+  let buf {.inject.} = new(seq[T])
+  buf[] = newSeq[T](num)
+  proc rec(j: int, v: T, n: int) =
+    buf[n] = v
+    if n == 0:
+      body
+    else:
+      for i in j .. xs.high:
+        rec(i + 1, xs[i], n - 1)
+  for i, x in xs:
+    rec(i + 1, x, num - 1)
+
 type BreakException*[T] = object of CatchableError
   v: T
 
@@ -258,21 +271,11 @@ template cbreak*[T](val: T) =
   e.v = val
   raise e
 
-template combos*[T](xs: seq[T], num: int, body: untyped): untyped =
-  let buf {.inject.} = new(seq[T])
-  buf[] = newSeq[T](num)
-  var res: T
-  proc rec(j: int, v: T, n: int) =
-    buf[n] = v
-    if n == 0:
-      body
-    else:
-      for i in j .. xs.high:
-        rec(i + 1, xs[i], n - 1)
+template combos*[T](W: type, xs: seq[T], num: int, body: untyped): untyped =
+  var res: W
   try:
-    for i, x in xs:
-      rec(i + 1, x, num - 1)
-  except BreakException[T] as e:
+    combos(xs, num, body)
+  except BreakException[W] as e:
     res = e.v
   res
 

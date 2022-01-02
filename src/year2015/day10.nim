@@ -1,27 +1,27 @@
 import sequtils
 
-proc lookAndSay(s: seq[char]): seq[char] =
-  var curr = s[0]
-  var cnt = 0
-  for c in s:
-    if c == curr:
-      cnt += 1
-    else:
-      result.add($cnt)
-      result.add(curr)
-      curr = c
-      cnt = 1
-  result.add($cnt)
-  result.add(curr)
+proc lookAndSay(s: string, n: int): int =
+  var inp = s.toSeq
+  var outp = newSeqOfCap[char](inp.len)
+  for _ in 1..n:
+    var curr = inp[0]
+    var cnt = 0
+    for c in inp:
+      if curr == c:
+        cnt += 1
+      else:
+        outp.add((cnt + '0'.ord).chr)
+        outp.add(curr)
+        curr = c
+        cnt = 1
+    outp.add((cnt + '0'.ord).chr)
+    outp.add(curr)
+    swap(inp, outp)
+    outp.setLen(0)
+  inp.len
 
 proc part1*(input: string): int =
-  var s = toSeq(input)
-  for _ in 1..40:
-    s = lookAndSay(s)
-  s.len
+  input.lookAndSay(40)
 
 proc part2*(input: string): int =
-  var s = toSeq(input)
-  for _ in 1..50:
-    s = lookAndSay(s)
-  s.len
+  input.lookAndSay(50)

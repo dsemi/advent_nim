@@ -15,7 +15,7 @@ proc part1*(input: string): int =
 
 proc part2*(input: string): string =
   let ids = input.splitLines
-  combos(ids, 2):
+  combos(string, ids, 2):
     let (b1, b2) = (buf[0], buf[1])
     var diff = 0
     for (a, b) in b1.zip(b2):

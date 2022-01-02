@@ -1,13 +1,14 @@
-import itertools
 import math
 import sequtils
 import strutils
 
+import "../utils.nim"
+
 proc solve(n: int, input: string): int =
   let ns = input.splitlines.map(parseInt)
-  for combo in combinations(ns, n):
-    if combo.sum == 2020:
-      return combo.prod
+  combos(int, ns, n):
+    if buf[].sum == 2020:
+      cbreak buf[].prod
 
 proc part1*(input: string): int =
   solve(2, input)

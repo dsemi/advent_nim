@@ -16,8 +16,7 @@ proc part1*(input: string): string =
   var ns = input.mapIt(($it).parseInt)
   for _ in 1..100:
     for (i, n) in ns.mpairs:
-      var j = 0
-      var t = 0
+      var j, t = 0
       for x in pattern(i+1):
         t += ns[j] * x
         inc j
