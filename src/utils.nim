@@ -249,18 +249,32 @@ proc seqToIter*[T](xs: seq[T]): iterator: T =
     for x in xs:
       yield x
 
-proc combos*[T](xs: seq[T], n: int, f: (ref seq[T]) -> void) =
-  let buf = new(seq[T])
-  buf[] = newSeq[T](n)
+type BreakException*[T] = object of CatchableError
+  v: T
+
+template cbreak*[T](val: T) =
+  var e: ref BreakException[T]
+  new(e)
+  e.v = val
+  raise e
+
+template combos*[T](xs: seq[T], num: int, body: untyped): untyped =
+  let buf {.inject.} = new(seq[T])
+  buf[] = newSeq[T](num)
+  var res: T
   proc rec(j: int, v: T, n: int) =
     buf[n] = v
     if n == 0:
-      f(buf)
-      return
-    for i in j .. xs.high:
-      rec(i + 1, xs[i], n - 1)
-  for i, x in xs:
-    rec(i + 1, x, n - 1)
+      body
+    else:
+      for i in j .. xs.high:
+        rec(i + 1, xs[i], n - 1)
+  try:
+    for i, x in xs:
+      rec(i + 1, x, num - 1)
+  except BreakException[T] as e:
+    res = e.v
+  res
 
 type Tree*[T] = ref object
   val*: T
