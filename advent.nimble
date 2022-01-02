@@ -5,7 +5,13 @@ license     = "Unspecified"
 srcDir      = "src"
 bin         = @["main"]
 
-requires "fusion >= 1.0"
-requires "nim >= 1.4.2"
+requires "fusion >= 1.1"
+requires "nim >= 1.6.2"
 requires "itertools >= 0.4.0"
-requires "regex >= 0.18.0"
+requires "parsetoml >= 0.6.0"
+requires "regex >= 0.19.0"
+
+task test, "Runs the test suite":
+  for i in 0..paramCount():
+    echo paramStr(i)
+  exec "nim c -r -d:release --threads:on tests/test.nim -- \"2015::\""

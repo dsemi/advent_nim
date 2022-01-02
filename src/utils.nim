@@ -202,7 +202,6 @@ iterator dijkstra*[T](start: T, neighbs: T -> (iterator: (int, T))): (int, T) =
   while queue.len > 0:
     let (d, st) = queue.pop
     yield (d, st)
-    let shortest = dists.mgetOrPut(st, d)
     if d <= dists.getOrDefault(st, int.high):
       dists[st] = d
       for (d2, st2) in neighbs(st):

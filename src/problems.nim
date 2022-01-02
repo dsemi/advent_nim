@@ -1,3 +1,4 @@
+import httpclient
 import macros
 import options
 import os
@@ -5,6 +6,30 @@ import strformat
 import strutils
 import sugar
 import tables
+import times
+
+const fetchIntervalMs = 5000
+
+var lastCall: Time = getTime() - fetchIntervalMs.milliseconds
+proc downloadInput(url: string, outFile: string) =
+  let diff = int((getTime() - lastCall).inMilliseconds)
+  if diff < fetchIntervalMs:
+    sleep(fetchIntervalMs - diff)
+  let cookie = getEnv("AOC_SESSION")
+  var client = newHttpClient()
+  client.headers = newHttpHeaders({"Cookie": cookie})
+  let dir = parentDir(outFile)
+  if not dirExists(dir):
+    createDir(dir)
+  downloadFile(client, url, outFile)
+  lastCall = getTime()
+
+proc getInput*(year: int, day: int, download: bool = false): string =
+  let inputFile = fmt"inputs/{year}/input{day}.txt"
+  if not fileExists(inputFile) and download:
+    echo fmt"Downloading input for Year {year} Day {day}"
+    downloadInput(fmt"https://adventofcode.com/{year}/day/{day}/input", inputFile)
+  readFile(inputFile).strip(leading = false)
 
 # Use SomeNumber
 # Could implement a `to` function for each type

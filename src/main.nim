@@ -1,6 +1,7 @@
+import algorithm
 import fusion/matching
-import httpclient
 import os
+import parsetoml
 import sequtils
 import std/monotimes
 import strformat
@@ -9,31 +10,9 @@ import sugar
 import tables
 import terminal
 import times
+import unittest
 
 import problems
-
-const fetchIntervalMs = 5000
-
-var lastCall: Time = getTime() - fetchIntervalMs.milliseconds
-proc downloadInput(url: string, outFile: string) =
-  let diff = int((getTime() - lastCall).inMilliseconds)
-  if diff < fetchIntervalMs:
-    sleep(fetchIntervalMs - diff)
-  let cookie = getEnv("AOC_SESSION")
-  var client = newHttpClient()
-  client.headers = newHttpHeaders({"Cookie": cookie})
-  let dir = parentDir(outFile)
-  if not dirExists(dir):
-    createDir(dir)
-  downloadFile(client, url, outFile)
-  lastCall = getTime()
-
-proc getInput(year: int, day: int): string =
-  let inputFile = fmt"inputs/{year}/input{day}.txt"
-  if not fileExists(inputFile):
-    echo fmt"Downloading input for Year {year} Day {day}"
-    downloadInput(fmt"https://adventofcode.com/{year}/day/{day}/input", inputFile)
-  readFile(inputFile).strip(leading = false)
 
 proc colorizeTime(t: float): string =
   let s = fmt"{t:.3f}"
@@ -56,7 +35,7 @@ proc run(year: int, day: int): float =
   if year notin probs or day notin probs[year]:
     echo fmt"{year} Day {day} not implemented"
     return 0
-  let contents = getInput(year, day)
+  let contents = getInput(year, day, true)
   echo fmt"Day {day}"
   let outstr = "Part $1: $2  Elapsed time $3 seconds"
   let (ans1, t1) = timeit(probs[year][day][0], contents)
@@ -65,14 +44,37 @@ proc run(year: int, day: int): float =
   echo outstr.format(2, align(ans2, 32), colorizeTime(t2))
   t1 + t2
 
-let year = commandLineParams()[0].parseInt
-var total = 0.0
-for daystr in commandLineParams()[1 .. ^1]:
-  let days = if "-" in daystr:
-               [@a, @b] := daystr.split("-")
-               toSeq(a.parseInt .. b.parseInt)
-             else:
-               @[daystr.parseInt]
-  for day in days:
-    total += run(year, day)
-echo fmt"Total: {total:53.3f} seconds"
+if commandLineParams()[0] == "test":
+  let expectedAnswers = parseFile("tests/expectedAnswers.toml")
+  var years = probs.keys.toSeq
+  years.sort
+  for y in years:
+    suite $y:
+      var days = probs[y].keys.toSeq
+      days.sort
+      for d in days:
+        let f = probs[y][d]
+        test $d:
+          let input = getInput(y, d)
+
+          var expected = expectedAnswers[$y][$d]["part1"].getStr
+          var actual = f[0](input)
+          check(expected == actual)
+
+          expected = expectedAnswers[$y][$d]["part2"].getStr
+          actual = f[1](input)
+          check(expected == actual)
+else:
+  let year = commandLineParams()[0].parseInt
+  var total = 0.0
+  let days = if commandLineParams()[1 .. ^1].len > 0: commandLineParams()[1 .. ^1]
+             else: (1..25).toSeq.mapIt($it)
+  for daystr in days:
+    let days = if "-" in daystr:
+                 [@a, @b] := daystr.split("-")
+                 toSeq(a.parseInt .. b.parseInt)
+               else:
+                 @[daystr.parseInt]
+    for day in days:
+      total += run(year, day)
+  echo fmt"Total: {total:53.3f} seconds"
