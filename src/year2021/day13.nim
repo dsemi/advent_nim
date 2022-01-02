@@ -38,5 +38,4 @@ proc part2*(input: string): string =
   var display = @[""]
   for y in 0..my:
     display.add((0..mx).toSeq.mapIt(if (it, y) in paper: '#' else: ' ').join)
-  display[^1].add(' ')
   display.join("\n")

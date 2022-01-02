@@ -32,11 +32,11 @@ proc draw(points: Table[Coord, int]): string =
     minY = min(minY, y)
     maxX = max(maxX, x)
     maxY = max(maxY, y)
-  result = "\n"
+  result = ""
   for y in minY..maxY:
+    result &= "\n"
     for x in minX..maxX:
       result &= (if points.getOrDefault((x, y), 0) == 0: ' ' else: '#')
-    result &= "\n"
 
 proc part2*(input: string): string =
   var prog = input.parse
