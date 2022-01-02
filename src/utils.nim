@@ -249,11 +249,18 @@ proc seqToIter*[T](xs: seq[T]): iterator: T =
     for x in xs:
       yield x
 
-# Macro for Nth?
-iterator combos2*[T](xs: seq[T]): (T, T) =
-  for i in xs.low .. xs.high:
-    for j in i+1 .. xs.high:
-      yield (xs[i], xs[j])
+proc combos*[T](xs: seq[T], n: int, f: (ref seq[T]) -> void) =
+  let buf = new(seq[T])
+  buf[] = newSeq[T](n)
+  proc rec(j: int, v: T, n: int) =
+    buf[n] = v
+    if n == 0:
+      f(buf)
+      return
+    for i in j .. xs.high:
+      rec(i + 1, xs[i], n - 1)
+  for i, x in xs:
+    rec(i + 1, x, n - 1)
 
 type Tree*[T] = ref object
   val*: T
