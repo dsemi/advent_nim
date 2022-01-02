@@ -251,8 +251,8 @@ proc seqToIter*[T](xs: seq[T]): iterator: T =
 
 # Macro for Nth?
 iterator combos2*[T](xs: seq[T]): (T, T) =
-  for i in xs.low..xs.high:
-    for j in i+1..xs.high:
+  for i in xs.low .. xs.high:
+    for j in i+1 .. xs.high:
       yield (xs[i], xs[j])
 
 type Tree*[T] = ref object

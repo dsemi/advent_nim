@@ -42,6 +42,7 @@ proc run(year: int, day: int): float =
   echo outstr.format(1, align(ans1, 32), colorizeTime(t1))
   let (ans2, t2) = timeit(probs[year][day][1], contents)
   echo outstr.format(2, align(ans2, 32), colorizeTime(t2))
+  echo ""
   t1 + t2
 
 if commandLineParams()[0] == "test":
@@ -67,6 +68,7 @@ if commandLineParams()[0] == "test":
 else:
   let year = commandLineParams()[0].parseInt
   var total = 0.0
+  var (mx, md) = (0.0, 0)
   let days = if commandLineParams()[1 .. ^1].len > 0: commandLineParams()[1 .. ^1]
              else: (1..25).toSeq.mapIt($it)
   for daystr in days:
@@ -76,5 +78,11 @@ else:
                else:
                  @[daystr.parseInt]
     for day in days:
-      total += run(year, day)
+      let t = run(year, day)
+      total += t
+      if t > mx:
+        mx = t
+        md = day
+
+  echo fmt"Max: Day {md:2} {mx:48.3f} seconds"
   echo fmt"Total: {total:53.3f} seconds"
