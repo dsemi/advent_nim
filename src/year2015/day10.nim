@@ -1,24 +1,28 @@
-import sequtils
+const LEN = 10_000_000
+
+proc add1[T: SomeInteger](n: var T): T =
+  result = n
+  n += 1
 
 proc lookAndSay(s: string, n: int): int =
-  var inp = s.toSeq
-  var outp = newSeqOfCap[char](inp.len)
+  var inp = newSeq[byte](LEN)
+  var outp = newSeq[byte](LEN)
+  for i, c in s:
+    inp[i] = byte(c.ord - '0'.ord)
+  var iLen = s.len
   for _ in 1..n:
-    var curr = inp[0]
-    var cnt = 0
-    for c in inp:
-      if curr == c:
-        cnt += 1
-      else:
-        outp.add((cnt + '0'.ord).chr)
-        outp.add(curr)
-        curr = c
-        cnt = 1
-    outp.add((cnt + '0'.ord).chr)
-    outp.add(curr)
+    var oLen = 0
+    var c = 0
+    while c < iLen:
+      var l = 1
+      while inp[c + l] == inp[c]:
+        l += 1
+      outp[oLen.add1] = byte(l)
+      outp[oLen.add1] = inp[c]
+      c += l
     swap(inp, outp)
-    outp.setLen(0)
-  inp.len
+    iLen = oLen
+  iLen
 
 proc part1*(input: string): int =
   input.lookAndSay(40)
