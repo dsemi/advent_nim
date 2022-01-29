@@ -18,25 +18,21 @@ proc parse(input: string): seq[seq[int]] =
       key += 1
     if not d.hasKeyOrPut(p2, key):
       key += 1
-    result[d[p1]][d[p2]] = n
+    result[d[p1]][d[p2]] += n
+    result[d[p2]][d[p1]] += n
 
-proc optimal(d: seq[seq[int]]): int =
+proc optimal(d: seq[seq[int]], p2: bool): int =
   var perm = toSeq(d.low..d.high)
   var run = true
   while run:
-    var t = 0
-    for i in perm.low .. perm.high:
-      t += d[perm[i]][perm[(i+1) mod perm.len]] +
-           d[perm[(i+1) mod perm.len]][perm[i]]
+    var t = if p2: 0 else: d[perm[perm.low]][perm[perm.high]]
+    for i in perm.low+1 .. perm.high:
+      t += d[perm[i-1]][perm[i]]
     result = max(result, t)
     run = perm.nextPermutation
 
 proc part1*(input: string): int =
-  optimal(parse(input))
+  optimal(parse(input), false)
 
 proc part2*(input: string): int =
-  var d = parse(input)
-  for p in d.mitems:
-    p.add(0)
-  d.add(newSeq[int](d[0].len))
-  optimal(d)
+  optimal(parse(input), true)
