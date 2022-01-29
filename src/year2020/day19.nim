@@ -2,7 +2,6 @@ import algorithm
 import fusion/matching
 import sequtils
 import strutils
-import sugar
 
 type
   RuleKind = enum
@@ -29,21 +28,16 @@ proc parse(input: string): (seq[Rule], seq[string]) =
   (res.mapIt(it[1]), messages.splitlines)
 
 proc countMatches(rules: seq[Rule], messages: seq[string]): int =
-  proc go(rule: Rule, s: string, i: int = 0): seq[int] =
-    if i > s.high:
-      return @[]
-    elif rule.kind == single:
-      return if s[i] == rule.ch: @[i+1] else: @[]
-    for rs in rule.rss:
-      var fold = @[i]
-      for r in rs:
-        fold = collect(newSeq):
-          for x in fold:
-            for y in go(rules[r], s, x):
-              y
-      result.add(fold)
+  proc check(s: string, ss: seq[int]): bool =
+    if s.len == 0 or ss.len == 0:
+      return s.len == 0 and ss.len == 0
+    let rule = rules[ss[0]]
+    if rule.kind == single:
+      return s[0] == rule.ch and check(s[1..^1], ss[1..^1])
+    return rule.rss.anyIt(check(s, concat(it, ss[1..^1])))
+
   for message in messages:
-    if message.len in go(rules[0], message):
+    if check(message, @[0]):
       inc result
 
 proc part1*(input: string): int =
