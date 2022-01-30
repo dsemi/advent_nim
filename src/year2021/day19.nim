@@ -15,9 +15,6 @@ type
 proc min(a, b: Pt): Pt =
   Pt(c: [min(a.c[0], b.c[0]), min(a.c[1], b.c[1]), min(a.c[2], b.c[2])])
 
-proc `<`(a, b: Pt): bool =
-  (a.c[0], a.c[1], a.c[2]) < (b.c[0], b.c[1], b.c[2])
-
 proc hash(a: Pt): uint64 =
   for n in a.c:
     result = (result shl 21) xor uint64(n)
@@ -83,7 +80,7 @@ iterator bits(n: SomeInteger): int =
 
 proc combine(input: string): (HashSet[uint64], seq[Scanner]) =
   var scanners = parse(input)
-  var need = uint64(1) shl uint64(scanners.len) - 2
+  var need = (uint64(1) shl uint64(scanners.len)) - 2
   var todo = @[0]
   while todo.len > 0:
     let i = todo.pop
@@ -91,7 +88,7 @@ proc combine(input: string): (HashSet[uint64], seq[Scanner]) =
       if align(scanners[i], scanners[j], 0):
         discard align(scanners[i], scanners[j], 1)
         discard align(scanners[i], scanners[j], 2)
-        need = need xor (uint64(1) shl uint64(j))
+        need.flipBit(j)
         todo.add(j)
   for s in scanners:
     for p in s.ps:
