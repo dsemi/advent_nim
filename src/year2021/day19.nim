@@ -4,23 +4,18 @@ import strscans
 import strutils
 
 type
-  Pt = object
-    c: array[3, int]
+  Pt = array[3, int]
 
   Scanner = object
     ps: seq[Pt]
     offset: Pt
     min: Pt
 
-proc min(a, b: Pt): Pt =
-  Pt(c: [min(a.c[0], b.c[0]), min(a.c[1], b.c[1]), min(a.c[2], b.c[2])])
-
 proc hash(a: Pt): uint64 =
-  for n in a.c:
-    result = (result shl 21) xor uint64(n)
+  uint64(a[0] shl 42) xor uint64(a[1] shl 21) xor uint64(a[2])
 
 proc add(s: var Scanner, p: Pt) =
-  s.min = s.min.min(p)
+  s.min = [min(s.min[0], p[0]), min(s.min[1], p[1]), min(s.min[2], p[2])]
   s.ps.add(p)
 
 proc parse(input: string): seq[Scanner] =
@@ -28,20 +23,20 @@ proc parse(input: string): seq[Scanner] =
     result.add(Scanner())
     for line in group.splitlines[1..^1]:
       var pt: Pt
-      doAssert line.scanf("$i,$i,$i", pt.c[0], pt.c[1], pt.c[2])
+      doAssert line.scanf("$i,$i,$i", pt[0], pt[1], pt[2])
       result[^1].add(pt)
 
-proc align(a, b: var Scanner, aa: int): bool =
+proc align(a, b: var Scanner, aa: static[int]): bool =
   var collision = newSeq[uint8](4096 * 6)
   for pa in a.ps:
     for pb in b.ps:
       var base = 0
-      for n in [2048 + (pb.c[0] - b.min.c[0]) - (pa.c[aa] - a.min.c[aa]),
-                (pb.c[0] - b.min.c[0]) + (pa.c[aa] - a.min.c[aa]),
-                2048 + (pb.c[1] - b.min.c[1]) - (pa.c[aa] - a.min.c[aa]),
-                (pb.c[1] - b.min.c[1]) + (pa.c[aa] - a.min.c[aa]),
-                2048 + (pb.c[2] - b.min.c[2]) - (pa.c[aa] - a.min.c[aa]),
-                (pb.c[2] - b.min.c[2]) + (pa.c[aa] - a.min.c[aa])]:
+      for n in [2048 + (pb[0] - b.min[0]) - (pa[aa] - a.min[aa]),
+                (pb[0] - b.min[0]) + (pa[aa] - a.min[aa]),
+                2048 + (pb[1] - b.min[1]) - (pa[aa] - a.min[aa]),
+                (pb[1] - b.min[1]) + (pa[aa] - a.min[aa]),
+                2048 + (pb[2] - b.min[2]) - (pa[aa] - a.min[aa]),
+                (pb[2] - b.min[2]) + (pa[aa] - a.min[aa])]:
         var n = n
         let idx = base + n
         inc collision[idx]
@@ -49,26 +44,22 @@ proc align(a, b: var Scanner, aa: int): bool =
           let ori = idx div 4096
           let axis = ori div 2
           let negate = ori mod 2 == 1
-          n += b.min.c[axis]
-          if negate:
-            n += a.min.c[aa]
-          else:
-            n -= a.min.c[aa] + 2048
+          n += b.min[axis] + (if negate: a.min[aa] else: - a.min[aa] - 2048)
 
-          b.offset.c[aa] = if negate: -n else: n
+          b.offset[aa] = if negate: -n else: n
 
           if axis != aa:
-            swap(b.min.c[aa], b.min.c[axis])
+            swap(b.min[aa], b.min[axis])
             for p in b.ps.mitems:
-              swap(p.c[aa], p.c[axis])
+              swap(p[aa], p[axis])
           if negate:
-            b.min.c[aa] = n - b.min.c[aa] - 2047
+            b.min[aa] = n - b.min[aa] - 2047
             for p in b.ps.mitems:
-              p.c[aa] = n - p.c[aa]
+              p[aa] = n - p[aa]
           else:
-            b.min.c[aa] = b.min.c[aa] - n
+            b.min[aa] = b.min[aa] - n
             for p in b.ps.mitems:
-              p.c[aa] = p.c[aa] - n
+              p[aa] = p[aa] - n
           return true
         base += 4096
 
@@ -102,7 +93,7 @@ proc part2*(input: string): int =
   let scanners = combine(input)[1]
   for a in scanners:
     for b in scanners:
-      let dist = (abs(a.offset.c[0] - b.offset.c[0]) +
-                  abs(a.offset.c[1] - b.offset.c[1]) +
-                  abs(a.offset.c[2] - b.offset.c[2]))
+      let dist = (abs(a.offset[0] - b.offset[0]) +
+                  abs(a.offset[1] - b.offset[1]) +
+                  abs(a.offset[2] - b.offset[2]))
       result = max(result, dist)
