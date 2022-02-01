@@ -249,35 +249,35 @@ proc seqToIter*[T](xs: seq[T]): iterator: T =
     for x in xs:
       yield x
 
-template combos*[T](xs: seq[T], num: int, body: untyped) =
-  let buf {.inject.} = new(seq[T])
-  buf[] = newSeq[T](num)
-  proc rec(j: int, v: T, n: int) =
-    buf[n] = v
-    if n == 0:
-      body
-    else:
-      for i in j .. xs.high:
-        rec(i + 1, xs[i], n - 1)
-  for i, x in xs:
-    rec(i + 1, x, num - 1)
+iterator comboHelper(m, n: int): seq[int] =
+  var c = newSeq[int](n)
+  for i in 0 ..< n:
+    c[i] = i
 
-type BreakException*[T] = object of CatchableError
-  v: T
+  block outer:
+    while true:
+      yield c
 
-template cbreak*[T](val: T) =
-  var e: ref BreakException[T]
-  new(e)
-  e.v = val
-  raise e
+      var i = n - 1
+      inc c[i]
+      if c[i] <= m - 1:
+        continue
 
-template combos*[T](W: type, xs: seq[T], num: int, body: untyped): untyped =
-  var res: W
-  try:
-    combos(xs, num, body)
-  except BreakException[W] as e:
-    res = e.v
-  res
+      while c[i] >= m - n + i:
+        dec i
+        if i < 0:
+          break outer
+      inc c[i]
+      while i < n-1:
+        c[i+1] = c[i] + 1
+        inc i
+
+iterator combos*[T](xs: seq[T], n: int): seq[T] =
+  var buf = newSeq[T](n)
+  for idcs in comboHelper(xs.len, n):
+    for i, v in idcs:
+      buf[i] = xs[v]
+    yield buf
 
 type Tree*[T] = ref object
   val*: T

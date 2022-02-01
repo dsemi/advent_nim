@@ -9,9 +9,9 @@ proc quantumEntanglement(n: int, input: string): int =
   let groupSize = wts.sum div n
   for i in 1 .. int.high:
     var qes: seq[int]
-    combos(wts, i):
-      if buf[].sum == groupSize:
-        qes.add(buf[].prod)
+    for buf in combos(wts, i):
+      if buf.sum == groupSize:
+        qes.add(buf.prod)
     if qes.len > 0:
       return qes.min
 

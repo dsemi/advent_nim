@@ -9,9 +9,11 @@ proc parse(input: string): seq[int64] =
 
 proc findFirstInvalid(ns: seq[int64]): int64 =
   for n in 25 .. int.high:
-    let any = combos(bool, ns[n-25 ..< n], 2):
-      if buf[].sum == ns[n]:
-        cbreak true
+    var any = false
+    for buf in combos(ns[n-25 ..< n], 2):
+      if buf.sum == ns[n]:
+        any = true
+        break
     if not any:
       return ns[n]
 

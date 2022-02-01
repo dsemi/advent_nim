@@ -15,11 +15,11 @@ proc part1*(input: string): int =
 
 proc part2*(input: string): string =
   let ids = input.splitLines
-  combos(string, ids, 2):
+  for buf in combos(ids, 2):
     let (b1, b2) = (buf[0], buf[1])
     var diff = 0
     for (a, b) in b1.zip(b2):
       if a != b:
         inc diff
     if diff == 1:
-      cbreak b1.zip(b2).filterIt(it[0] == it[1]).mapIt(it[0]).join
+      return b1.zip(b2).filterIt(it[0] == it[1]).mapIt(it[0]).join

@@ -7,8 +7,8 @@ import "../utils.nim"
 iterator allCombos(xs: seq[int]): int =
   for i in 1 .. xs.len:
     var res: int
-    combos(xs, i):
-      if buf[].sum == 150:
+    for buf in combos(xs, i):
+      if buf.sum == 150:
         inc res
     yield res
 
