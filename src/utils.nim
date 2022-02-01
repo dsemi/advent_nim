@@ -211,7 +211,7 @@ iterator dijkstra*[T](start: T, neighbs: T -> (iterator: (int, T))): (int, T) =
           queue.push((dist, st2))
 
 iterator dijkstra*[T](start: T, neighbs: T -> seq[(int, T)]): (int, T) =
- for x in  dijkstra(start, proc(s: T): iterator(): (int, T) =
+ for x in dijkstra(start, proc(s: T): iterator(): (int, T) =
                             return iterator(): (int, T) =
                               for n in neighbs(s):
                                 yield n):
