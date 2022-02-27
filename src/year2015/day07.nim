@@ -36,4 +36,4 @@ proc part1*(input: string): uint16 =
 
 proc part2*(input: string): uint16 =
   let a = parseWires(input)["a"]()
-  parseWires(input & "\n{a} -> b".fmt)["a"]()
+  parseWires(input & &"\n{a} -> b")["a"]()

@@ -2,23 +2,22 @@ import json
 import sequtils
 import sugar
 
-proc numbers(f: (JsonNode) -> bool, obj: JsonNode): BiggestInt =
+proc numbers(obj: JsonNode, f: (JsonNode) -> bool): BiggestInt =
   if f(obj):
     case obj.kind:
       of JObject:
         for (_, v) in obj.pairs:
-          result += numbers(f, v)
+          result += numbers(v, f)
       of JArray:
         for n in obj.items:
-          result += numbers(f, n)
+          result += numbers(n, f)
       of JInt:
         result += obj.getBiggestInt
       else:
         discard
 
 proc part1*(input: string): BiggestInt =
-  numbers((_) => true, parseJson(input))
+  input.parseJson.numbers((_) => true)
 
 proc part2*(input: string): BiggestInt =
-  numbers((o) => o.kind != JObject or toSeq(o.pairs).allIt(it[1] != "red".newJString),
-          parseJson(input))
+  input.parseJson.numbers((o) => o.kind != JObject or o.pairs.toSeq.allIt(it[1] != "red".newJString))

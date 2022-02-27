@@ -10,8 +10,8 @@ proc part1*(input: string): string =
     if h[0] == 0 and h[1] == 0 and h[2] < 16:
       arr[j] = toHex(h[2], 1).toLowerAscii
       inc j
-    if j == 8:
-      return arr.join
+      if j == 8:
+        return arr.join
 
 proc part2*(input: string): string =
   var
@@ -24,5 +24,5 @@ proc part2*(input: string): string =
       if arr[pos] == "":
         arr[pos] = toHex(h[3], 2)[0..0].toLowerAscii
         inc j
-    if j == 8:
-      return arr.join
+        if j == 8:
+          return arr.join
