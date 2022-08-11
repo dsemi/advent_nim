@@ -39,9 +39,9 @@ proc run(year: int, day: int): float =
   echo fmt"Day {day}"
   let outstr = "Part $1: $2  Elapsed time $3 seconds"
   let (ans1, t1) = timeit(probs[year][day][0], contents)
-  echo outstr.format(1, align(ans1, 32), colorizeTime(t1))
+  echo outstr.format(1, align(ans1, 50), colorizeTime(t1))
   let (ans2, t2) = timeit(probs[year][day][1], contents)
-  echo outstr.format(2, align(ans2, 32), colorizeTime(t2))
+  echo outstr.format(2, align(ans2, 50), colorizeTime(t2))
   echo ""
   t1 + t2
 
@@ -84,5 +84,5 @@ else:
         mx = t
         md = day
 
-  echo fmt"Max: Day {md:2} {mx:48.3f} seconds"
-  echo fmt"Total: {total:53.3f} seconds"
+  echo fmt"Max: Day {md:2} {mx:66.3f} seconds"
+  echo fmt"Total: {total:71.3f} seconds"

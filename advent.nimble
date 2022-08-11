@@ -6,7 +6,7 @@ srcDir      = "src"
 bin         = @["main"]
 
 requires "fusion >= 1.1"
-requires "nim >= 1.6.2"
+requires "nim >= 1.6.6"
 requires "itertools >= 0.4.0"
 requires "parsetoml >= 0.6.0"
 requires "regex >= 0.19.0"
