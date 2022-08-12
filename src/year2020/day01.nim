@@ -1,17 +1,17 @@
-import math
 import sequtils
 import strutils
 
-import "../utils.nim"
-
-proc solve(n: int, input: string): int =
-  let ns = input.splitlines.map(parseInt)
-  for buf in combos(ns, n):
-    if buf.sum == 2020:
-      return buf.prod
-
 proc part1*(input: string): int =
-  solve(2, input)
+  let ns = input.splitLines.map(parseInt)
+  for i in ns.low .. ns.high:
+    for j in i+1 .. ns.high:
+        if ns[i] + ns[j] == 2020:
+          return ns[i] * ns[j]
 
 proc part2*(input: string): int =
-  solve(3, input)
+  let ns = input.splitLines.map(parseInt)
+  for i in ns.low .. ns.high:
+    for j in i+1 .. ns.high:
+      for k in j+1 .. ns.high:
+        if ns[i] + ns[j] + ns[k] == 2020:
+          return ns[i] * ns[j] * ns[k]

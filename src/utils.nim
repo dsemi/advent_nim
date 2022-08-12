@@ -141,26 +141,17 @@ proc chunks*[T](s: openArray[T], n: int): seq[seq[T]] =
   for i in countup(0, s.high, n):
     result.add(s[i..<i+n])
 
-macro toItr*(x: ForLoopStmt): untyped =
-  ## Convert factory proc call for inline-iterator-like usage.
-  ## E.g.: ``for e in toItr(myFactory(parm)): echo e``.
-  let expr = x[0]
-  let call = x[1][1] # Get foo out of toItr(foo)
-  let body = x[2]
-  result = quote do:
-    block:
-      let itr = `call`
-      for `expr` in itr():
-        `body`
-
-proc partitions*(n: int, t: int): iterator: seq[int] =
-  result = iterator: seq[int] =
-    if n == 1:
-      yield @[t]
+proc partitions*(n: int, t: int, f: (seq[int]) -> void) =
+  var ns = newSeq[int](n)
+  proc recur(n: int, t: int) =
+    if n == 0:
+      ns[n] = t
+      f(ns)
     else:
       for x in 0..t:
-        for xs in toItr(partitions(n-1, t-x)):
-          yield @[x] & xs
+        ns[n] = x
+        recur(n-1, t-x)
+  recur(n-1, t)
 
 proc lazy*[T](f: proc(): T): proc(): T =
   var val = none(T)
