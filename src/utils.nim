@@ -78,9 +78,6 @@ proc `*`*(n: int, p: Coord3): Coord3 =
 proc `div`*(c: Coord3, n: int): Coord3 =
   (c.x div n, c.y div n, c.z div n)
 
-proc floorDiv*(c: Coord3, n: int): Coord3 =
-  (floorDiv(c.x, n), floorDiv(c.y, n), floorDiv(c.z, n))
-
 proc abs*(p: Coord3): Coord3 =
   (p.x.abs, p.y.abs, p.z.abs)
 

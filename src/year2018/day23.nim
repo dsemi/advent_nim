@@ -1,4 +1,3 @@
-import math
 import sequtils
 import strscans
 import strutils
@@ -15,33 +14,57 @@ proc parseNanobots(input: string): seq[Nanobot] =
     doAssert line.scanf("pos=<$i,$i,$i>, r=$i", x, y, z, r)
     result.add(Nanobot(pos: (x, y, z), radius: r))
 
-proc inRange(bot: Nanobot, coord: Coord3): bool =
-  (bot.pos - coord).abs.sum <= bot.radius
+proc inRange(pos: Coord3, bot: Nanobot): bool =
+  (pos - bot.pos).abs.sum <= bot.radius
 
 proc part1*(input: string): int =
   let ns = input.parseNanobots
   let maxBot = ns.foldl(if b.radius > a.radius: b else: a)
   for bot in ns:
-    result += maxBot.inRange(bot.pos).int
+    result += bot.pos.inRange(maxBot).int
+
+type Cube = object
+  lo, hi: Coord3
+
+proc children(c: Cube): seq[Cube] =
+  let mid = (c.lo + c.hi) div 2
+  @[
+    Cube(lo: (c.lo[0], c.lo[1], c.lo[2]), hi: (mid[0], mid[1], mid[2])),
+    Cube(lo: (c.lo[0], c.lo[1], mid[2] + 1), hi: (mid[0], mid[1], c.hi[2])),
+    Cube(lo: (c.lo[0], mid[1] + 1, c.lo[2]), hi: (mid[0], c.hi[1], mid[2])),
+    Cube(lo: (c.lo[0], mid[1] + 1, mid[2] + 1), hi: (mid[0], c.hi[1], c.hi[2])),
+    Cube(lo: (mid[0] + 1, c.lo[1], c.lo[2]), hi: (c.hi[0], mid[1], mid[2])),
+    Cube(lo: (mid[0] + 1, c.lo[1], mid[2] + 1), hi: (c.hi[0], mid[1], c.hi[2])),
+    Cube(lo: (mid[0] + 1, mid[1] + 1, c.lo[2]), hi: (c.hi[0], c.hi[1], mid[2])),
+    Cube(lo: (mid[0] + 1, mid[1] + 1, mid[2] + 1), hi: (c.hi[0], c.hi[1], c.hi[2])),
+  ]
+
+proc inRange(c: Cube, n: Nanobot): bool =
+  let p = (
+    max(c.lo[0], min(c.hi[0], n.pos[0])),
+    max(c.lo[1], min(c.hi[1], n.pos[1])),
+    max(c.lo[2], min(c.hi[2], n.pos[2])),
+  )
+  p.inRange(n)
+
 
 proc part2*(input: string): int =
   let ns = input.parseNanobots
-  var n = 10_000_000
-  var minCoord = floorDiv(ns.mapIt(it.pos).foldl((min(a[0], b[0]), min(a[1], b[1]), min(a[2], b[2]))), n)
-  var maxCoord = floorDiv(ns.mapIt(it.pos).foldl((max(a[0], b[0]), max(a[1], b[1]), max(a[2], b[2]))), n)
-  var coord: (int, Coord3)
-  while n != 0:
-    let ns2 = ns.mapIt(Nanobot(pos: floorDiv(it.pos, n), radius: floorDiv(it.radius, n)))
-    coord[0] = int.low
-    for p in countup(minCoord, maxCoord):
-      var cnt: int
-      for n in ns2:
-        if n.inRange(p):
-          inc cnt
-      if (cnt, -p) > coord:
-        coord = (cnt, -p)
-    coord[1] = -coord[1]
-    minCoord = 10 * (coord[1] - (1, 1, 1))
-    maxCoord = 10 * (coord[1] + (1, 1, 1))
-    n = n div 10
-  coord[1].sum
+  var cube = Cube(lo: (int.high, int.high, int.high), hi: (int.low, int.low, int.low))
+  for n in ns:
+    cube.lo = (min(cube.lo[0], n.pos[0]-n.radius),
+               min(cube.lo[1], n.pos[1]-n.radius),
+               min(cube.lo[2], n.pos[2]-n.radius))
+    cube.hi = (max(cube.hi[0], n.pos[0]+n.radius),
+               max(cube.hi[1], n.pos[1]+n.radius),
+               max(cube.hi[2], n.pos[2]+n.radius))
+  while cube.lo[0] < cube.hi[0] or cube.lo[1] < cube.hi[1] or cube.lo[2] < cube.hi[2]:
+    let children = cube.children
+    var i, m: int
+    for j, c in children:
+      let bots = ns.countIt(c.inRange(it))
+      if bots > m:
+        i = j
+        m = bots
+    cube = children[i]
+  cube.lo.abs.sum
