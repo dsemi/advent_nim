@@ -1,49 +1,46 @@
-import fusion/matching
 import sequtils
 import strutils
 import tables
 
-proc parse(input: string): (seq[seq[int]], seq[bool]) =
-  var m = initTable[string, int]()
-  m["start"] = 0
-  m["end"] = 1
-  var v = @[newSeq[int](), newSeq[int]()]
-  var l = @[true, true]
-  for line in input.splitlines:
-    [@a, @b] := line.split('-', 1)
-    if a notin m:
-      v.add(@[])
-      l.add(a.all(isLowerAscii))
-      m[a] = v.len - 1
-    if b notin m:
-      v.add(@[])
-      l.add(b.all(isLowerAscii))
-      m[b] = v.len - 1
-    let ai = m[a]
-    let bi = m[b]
-    v[ai].add(bi)
-    v[bi].add(ai)
-  (v, l)
+type cave = ref object
+  lowercase: bool
+  visited: int
+  start: bool
+  fin: bool
+  neighbors: seq[cave]
 
-proc dfs(vis: var seq[int], l: seq[bool], m: seq[seq[int]], k: int, double: bool): int =
-  var double = double
-  if k == 1:
+proc mkCave(name: string): cave =
+  cave(lowercase: name.all(isLowerAscii),
+       start: name == "start",
+       fin: name == "end")
+
+proc parse(input: string): cave =
+  var caves = initTable[string, cave]()
+  for line in input.splitlines:
+    let v = line.split('-', 1)
+    var a = caves.mgetOrPut(v[0], mkCave(v[0]))
+    var b = caves.mgetOrPut(v[1], mkCave(v[1]))
+    a.neighbors.add(b)
+    b.neighbors.add(a)
+  caves["start"]
+
+proc dfs(c: var cave, canRevisit: bool): int =
+  var canRevisit = canRevisit
+  if c.fin:
     return 1
-  elif l[k] and vis[k] > 0:
-    if double or k == 0:
+  elif c.lowercase and c.visited > 0:
+    if not canRevisit or c.start:
       return 0
-    double = true
-  vis[k] += 1
-  for child in m[k]:
-    result += dfs(vis, l, m, child, double)
-  vis[k] -= 1
+    canRevisit = false
+  inc c.visited
+  for neighb in c.neighbors.mitems:
+    result += dfs(neighb, canRevisit)
+  dec c.visited
 
 proc part1*(input: string): int =
-  let (v, l) = parse(input)
-  var x = newSeq[int](v.len)
-  dfs(x, l, v, 0, true)
+  var start = parse(input)
+  dfs(start, false)
 
 proc part2*(input: string): int =
-  let (v, l) = parse(input)
-  var x = newSeq[int](v.len)
-  dfs(x, l, v, 0, false)
+  var start = parse(input)
+  dfs(start, true)
