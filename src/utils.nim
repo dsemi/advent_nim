@@ -141,17 +141,21 @@ proc chunks*[T](s: openArray[T], n: int): seq[seq[T]] =
   for i in countup(0, s.high, n):
     result.add(s[i..<i+n])
 
-proc partitions*(n: int, t: int, f: (seq[int]) -> void) =
+iterator partitions*(n: int, t: int): seq[int] =
   var ns = newSeq[int](n)
-  proc recur(n: int, t: int) =
-    if n == 0:
-      ns[n] = t
-      f(ns)
-    else:
-      for x in 0..t:
-        ns[n] = x
-        recur(n-1, t-x)
-  recur(n-1, t)
+  ns[^1] = t
+  while true:
+    yield ns
+    if ns[0] == t:
+      break
+    for i in countdown(ns.high, 1):
+      if ns[i] > 0:
+        let og = ns[i]
+        inc ns[i-1]
+        for j in i ..< ns.high:
+          ns[j] = 0
+        ns[^1] = og - 1
+        break
 
 proc lazy*[T](f: proc(): T): proc(): T =
   var val = none(T)
@@ -237,35 +241,33 @@ proc seqToIter*[T](xs: seq[T]): iterator: T =
     for x in xs:
       yield x
 
-iterator comboHelper(m, n: int): seq[int] =
+iterator combos*[T](xs: seq[T], n: int): seq[T] =
+  var buf = newSeq[T](n)
   var c = newSeq[int](n)
   for i in 0 ..< n:
     c[i] = i
+    buf[i] = xs[i]
 
   block outer:
     while true:
-      yield c
+      yield buf
 
       var i = n - 1
       inc c[i]
-      if c[i] <= m - 1:
+      if c[i] < xs.len:
+        buf[i] = xs[c[i]]
         continue
 
-      while c[i] >= m - n + i:
+      while c[i] >= xs.len - n + i:
         dec i
         if i < 0:
           break outer
       inc c[i]
+      buf[i] = xs[c[i]]
       while i < n-1:
         c[i+1] = c[i] + 1
+        buf[i+1] = xs[c[i+1]]
         inc i
-
-iterator combos*[T](xs: seq[T], n: int): seq[T] =
-  var buf = newSeq[T](n)
-  for idcs in comboHelper(xs.len, n):
-    for i, v in idcs:
-      buf[i] = xs[v]
-    yield buf
 
 type Tree*[T] = ref object
   val*: T

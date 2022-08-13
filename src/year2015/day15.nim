@@ -32,20 +32,17 @@ proc parse(input: string): seq[Ingredient] =
     let ns = ings.split(", ").mapIt(it.split[^1].parseInt)
     result.add((ns[0], ns[1], ns[2], ns[3], ns[4]))
 
-proc scores(total: int, calFilter: (int) -> bool, input: string): int =
+proc scores(input: string, total: int, calFilter: (int) -> bool): int =
   let ings = parse(input)
-  var res = 0
-  proc f(ms: seq[int]) =
+  for ms in partitions(ings.len, total):
     var tot: Ingredient = (0, 0, 0, 0, 0)
     for (n, i) in ms.zip(ings):
       tot += n * i
     if calFilter(tot.calories):
-      res = max(res, [tot.capacity, tot.durability, tot.flavor, tot.texture].mapIt(max(0, it)).prod)
-  partitions(ings.len, total, f)
-  res
+      result = max(result, [tot.capacity, tot.durability, tot.flavor, tot.texture].mapIt(max(0, it)).prod)
 
 proc part1*(input: string): int =
-  scores(100, (_) => true, input)
+  scores(input, 100, (_) => true)
 
 proc part2*(input: string): int =
-  scores(100, (x) => x == 500, input)
+  scores(input, 100, (x) => x == 500)
