@@ -1,37 +1,49 @@
+import sequtils
 import strutils
-import sets
-import tables
+import sugar
 
-import "../utils"
+proc parse(input: string): seq[seq[bool]] =
+  result = collect(newSeq):
+    for row in input.splitLines:
+      collect(newSeq):
+        for v in row:
+          v == '#'
 
-proc parse(input: string): HashSet[Coord] =
-  for r, row in pairs(input.splitlines):
-    for c, v in row:
-      if v == '#':
-        result.incl((r, c))
-
-proc step(ons: HashSet[Coord]): HashSet[Coord] =
-  var adjs: CountTable[Coord]
-  for p in ons:
-    for x in [-1, 0, 1]:
-      for y in [-1, 0, 1]:
-        if (x != 0 or y != 0) and p.x+x >= 0 and p.x+x < 100 and p.y+y >= 0 and p.y+y < 100:
-          adjs.inc((p.x+x, p.y+y))
-  for p in ons:
-    if adjs.getOrDefault(p) in [2, 3]:
-      result.incl(p)
-  for p, v in adjs.pairs:
-    if p notin ons and v == 3:
-      result.incl(p)
+proc step(grid: var seq[seq[bool]]) =
+  var neighbs = newSeqWith(grid.len, newSeq[int](grid[0].len))
+  for i in grid.low .. grid.high:
+    for j in grid[i].low .. grid[i].high:
+      for x in [-1, 0, 1]:
+        for y in [-1, 0, 1]:
+          if x != 0 or y != 0:
+            let i2 = i+y
+            let j2 = j+x
+            if i2 in grid.low .. grid.high and j2 in grid[i2].low .. grid[i2].high and grid[i2][j2]:
+              inc neighbs[i][j]
+  for i in grid.low .. grid.high:
+    for j in grid[i].low .. grid[i].high:
+      grid[i][j] = grid[i][j] and neighbs[i][j] in [2, 3] or not grid[i][j] and neighbs[i][j] == 3
 
 proc part1*(input: string): int =
-  var ons = parse(input)
+  var grid = parse(input)
   for _ in 1..100:
-    ons = step(ons)
-  ons.len
+    grid.step
+  for row in grid:
+    for v in row:
+      result.inc v.int
 
 proc part2*(input: string): int =
-  var ons = parse(input) + [(0, 0), (99, 0), (0, 99), (99, 99)].toHashSet
+  var grid = parse(input)
+  grid[0][0] = true
+  grid[0][99] = true
+  grid[99][0] = true
+  grid[99][99] = true
   for _ in 1..100:
-    ons = step(ons) + [(0, 0), (99, 0), (0, 99), (99, 99)].toHashSet
-  ons.len
+    grid.step
+    grid[0][0] = true
+    grid[0][99] = true
+    grid[99][0] = true
+    grid[99][99] = true
+  for row in grid:
+    for v in row:
+      result.inc v.int
