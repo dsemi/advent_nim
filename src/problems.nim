@@ -47,6 +47,9 @@ proc wrap(f: (string) -> int64): (string) -> string =
 proc wrap(f: (string) -> uint16): (string) -> string =
   return proc(inp: string): string = $f(inp)
 
+proc wrap(f: (string) -> uint64): (string) -> string =
+  return proc(inp: string): string = $f(inp)
+
 proc wrap(f: (string) -> Option[int]): (string) -> string =
   return proc(inp: string): string = $f(inp).get
 

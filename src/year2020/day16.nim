@@ -1,60 +1,72 @@
+import bitops
 import fusion/matching
 import sequtils
-import sets
+import std/enumerate
 import strscans
 import strutils
-import sugar
+import tables
 
-type Rule = (string, seq[(int, int)])
+type Rule = object
+  name: string
+  id: uint64
+  alo, ahi, blo, bhi: uint64
 
-proc parse(input: string): (seq[Rule], seq[int], seq[seq[int]]) =
+proc parse(input: string): (seq[Rule], seq[uint64], seq[seq[uint64]]) =
   [@rules, @yours, @others] := input.split("\n\n")
   var rls = newSeq[Rule]()
-  for line in rules.splitlines:
+  for i, line in enumerate(rules.splitLines):
     var name: string
-    var a, b, c, d: int
-    doAssert line.scanf("$+: $i-$i or $i-$i", name, a, b, c, d)
-    rls.add((name, @[(a, b), (c, d)]))
-  let yrs = yours.splitlines()[^1].split(',').map(parseInt)
-  let othrs = others.splitlines()[1 .. ^1].mapIt(it.split(',').map(parseInt))
+    var alo, ahi, blo, bhi: int
+    doAssert line.scanf("$+: $i-$i or $i-$i", name, alo, ahi, blo, bhi)
+    var rule = Rule(name: name, id: 1'u64 shl i,
+                    alo: alo.uint64, ahi: ahi.uint64, blo: blo.uint64, bhi: bhi.uint64)
+    rls.add(rule)
+  let yrs = yours.splitlines()[^1].split(',').mapIt(it.parseInt.uint64)
+  let othrs = others.splitlines()[1 .. ^1].mapIt(it.split(',').mapIt(it.parseInt.uint64))
   (rls, yrs, othrs)
 
-proc inRange(n: int, bds: (int, int)): bool =
-  let (a, b) = bds
-  a <= n and n <= b
-
-iterator invalidValues(rules: seq[Rule], ticket: seq[int]): int =
+iterator invalidValues(rules: seq[Rule], ticket: seq[uint64]): uint64 =
   for field in ticket:
-    if not rules.anyIt(it[1].anyIt(inRange(field, it))):
+    if not rules.anyIt(field in it.alo .. it.ahi or field in it.blo .. it.bhi):
       yield field
 
-proc part1*(input: string): int =
+proc part1*(input: string): uint64 =
   let (rules, _, tix) = parse(input)
   for t in tix:
     for x in invalidValues(rules, t):
       result += x
 
-proc part2*(input: string): int =
+proc part2*(input: string): uint64 =
   let (rules, yours, tickets) = parse(input)
+  var ruleMap = initTable[uint64, Rule]()
+  for rule in rules:
+    ruleMap[rule.id] = rule
   let tix = tickets.filterIt(toSeq(invalidValues(rules, it)).len == 0)
   var poss = repeat(rules, yours.len)
   for t in tix:
-    poss = poss.zip(t).map((pf) => pf[0].filter((rule) => rule[1].any((bds) => inRange(pf[1], bds))))
-  var poss2 = poss.mapIt(toHashSet(it.map((x) => x[0])))
-  var ones: HashSet[string]
-  while not poss2.allIt(it.len == 1):
-    ones = collect(initHashSet):
-      for p in poss2:
-        if p.len == 1:
-          for x in p:
-            {x}
-    poss2 = collect(newSeq):
-      for p in poss2:
-        if p.len > 1: p - ones else: p
-  let poss3 = collect(newSeq):
-    for p in poss2.mitems:
-      p.pop()
+    for i, field in t:
+      var validRules: seq[Rule]
+      for rule in poss[i]:
+        if field in rule.alo .. rule.ahi or field in rule.blo .. rule.bhi:
+          validRules.add(rule)
+      poss[i] = validRules
+  var possSet = newSeq[uint64](poss.len)
+  for i, p in poss:
+    var key: uint64
+    for x in p:
+      key = key or x.id
+    possSet[i] = key
+  while true:
+    var ones: uint64
+    for p in possSet:
+      if p.popcount == 1:
+        ones = ones or p
+    if possSet.len == ones.popcount:
+      break
+    for i, p in possSet:
+      if p.popcount > 1:
+        possSet[i] = possSet[i] and not ones
   result = 1
-  for (n, f) in poss3.zip(yours):
-    if n.startswith("departure"):
-      result *= f
+  for i, k in possSet:
+    if ruleMap[k].name.startsWith("departure"):
+      result *= yours[i]

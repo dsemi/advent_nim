@@ -16,10 +16,12 @@ proc run(steps: int, d: var openArray[int]) =
     let a = d[curr]
     let b = d[a]
     let c = d[b]
+    var n = curr
+    while n == curr or n == a or n == b or n == c:
+      dec n
+      if n == 0:
+        n = m
     d[curr] = d[c]
-    var n = if curr > 1: curr - 1 else: m
-    while n == a or n == b or n == c:
-      n = if n == 1: m else: n - 1
     d[c] = d[n]
     d[n] = a
     curr = d[curr]
