@@ -27,7 +27,7 @@ iterator winners(s: string): int =
   var ns: set[uint8]
   for n in nums.split(',').map(parseInt):
     ns.incl(uint8(n))
-    for i, board in boards.mpairs:
+    for board in boards.mitems:
       if not board.done and board.isWinner(ns):
         board.done = true
         yield n * board.score(ns)
