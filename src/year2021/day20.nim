@@ -22,9 +22,7 @@ proc enhance(grid: var seq[seq[char]], iea: string) =
           n = n shl 1 or int(grid[r+dr][c+dc] == '#')
       grid2[r][c] = iea[n]
   swap(grid, grid2)
-  var n: int
-  for _ in 1 .. 9:
-    n = n shl 1 or int(grid[0][0] == '#')
+  let n = if grid[0][0] == '#': 1 shl 9 - 1 else: 0
   let ch = iea[n]
   let last = grid.len - 1
   for i, row in grid.mpairs:
