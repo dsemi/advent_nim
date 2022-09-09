@@ -13,6 +13,7 @@ type
     reg: array['a'..'z', int]
     line: int
     instrs: seq[Instr]
+    sends: int
 
   Val = (Sim) -> int
 
@@ -46,7 +47,9 @@ proc run(s: var Sim, send: (int) -> void, recv: () -> Option[int]) =
   while s.line in s.instrs.low..s.instrs.high:
     let instr = s.instrs[s.line]
     case instr.kind:
-      of Snd: send(instr.v(s))
+      of Snd:
+        inc s.sends
+        send(instr.v(s))
       of Set: s.reg[instr.r] = instr.v(s)
       of Add: s.reg[instr.r] += instr.v(s)
       of Mul: s.reg[instr.r] *= instr.v(s)
@@ -73,14 +76,10 @@ proc part2*(input: string): int =
   s1.reg['p'] = 1
   var q0: Deque[int]
   var q1: Deque[int]
-  var p1Sends = 0
-  var firstRun = true
-  while firstRun or q0.len > 0 or q1.len > 0:
-    firstRun = false
+  while true:
     s0.run(proc(x: int) = q0.addLast(x),
            () => (if q1.len > 0: some(q1.popFirst) else: none(int)))
-    s1.run(proc(x: int) =
-             inc p1Sends
-             q1.addLast(x),
+    s1.run(proc(x: int) = q1.addLast(x),
            () => (if q0.len > 0: some(q0.popFirst) else: none(int)))
-  p1Sends
+    if q0.len == 0 and q1.len == 0:
+      return s1.sends
