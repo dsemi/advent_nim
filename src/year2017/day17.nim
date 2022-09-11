@@ -1,26 +1,21 @@
-import lists
 import strutils
 
 proc part1*(input: string): int =
   let step = input.parseInt
-  var curr = newSinglyLinkedNode[int](0)
-  curr.next = curr
+  var list = @[0]
+  var idx = 0
   for v in 1..2017:
-    for _ in 1..step:
-      curr = curr.next
-    var next = newSinglyLinkedNode[int](v)
-    next.next = curr.next
-    curr.next = next
-    curr = next
-  curr.next.value
+    idx = (idx + step) mod v + 1
+    list.insert(v, idx)
+  list[idx+1]
 
 proc part2*(input: string): int =
   let step = input.parseInt
-  var (i, idxOf0, valAft0) = (0, 0, 0)
-  for v in 1..50_000_000:
-    i = (i + step) mod v + 1
-    if i <= idxOf0:
-      inc idxOf0
-    elif i == idxOf0 + 1:
-      valAft0 = v
+  var pos, n, valAft0: int
+  while n < 50_000_000:
+    if pos == 1:
+      valAft0 = n
+    let skip = (n - pos) div step + 1
+    n += skip
+    pos = (pos + skip * (step + 1) - 1) mod n + 1
   valAft0
