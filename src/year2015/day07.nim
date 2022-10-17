@@ -14,7 +14,7 @@ proc parseWires(input: string): Table[string, () -> uint16] =
     try:
       return uint16(x.parseInt)
     except ValueError:
-     return tbl[x]()
+      return tbl[x]()
   for line in input.splitlines:
     case line.splitWhitespace:
       of [@b, "->", @v]:

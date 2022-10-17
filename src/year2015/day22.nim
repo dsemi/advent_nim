@@ -2,17 +2,23 @@ import fusion/matching
 import sequtils
 import strutils
 
+import "../utils"
+
 type
   Game = object
     playerHealth: int
     playerMana: int
     playerArmor: int
-    spentMana: int
     bossHealth: int
     bossDamage: int
     shieldTurns: int
     poisonTurns: int
     rechargeTurns: int
+    hard: bool
+    spentMana: int
+
+proc `<`(a, b: Game): bool =
+  false
 
 const
   magicMissile = (
@@ -55,41 +61,38 @@ proc applyEffects(state: var Game) =
     state.playerMana += 101
     state.rechargeTurns -= 1
 
-proc parseBoss(input: string): Game =
+proc parseBoss(input: string, hard: bool): Game =
   [@bHealth, @bDamage] := input.splitlines.mapIt(it.split(": ")[^1].parseInt)
-  Game(playerHealth: 50, playerMana: 500, bossHealth: bHealth, bossDamage: bDamage)
+  Game(playerHealth: 50, playerMana: 500, bossHealth: bHealth, bossDamage: bDamage, hard: hard)
 
-proc minCostToWin(s: Game, hard: bool): int =
-  var states = @[s]
-  result = int.high
-  while states.len > 0:
-    var state = states.pop
-    if hard:
+proc neighbors(s: Game): iterator(): (int, Game) =
+  return iterator(): (int, Game) =
+    var state = s
+    if state.hard:
       state.playerHealth -= 1
       if state.playerHealth <= 0:
-         continue
+        return
     applyEffects(state)
     if state.bossHealth <= 0:
-      result = min(result, state.spentMana)
-      continue
+      yield (0, state)
+      return
     for spell in spells:
-      if state.playerMana >= spell.cost and
-         state.spentMana + spell.cost < result and
-         not spell.active(state):
+      if state.playerMana >= spell.cost and not spell.active(state):
         var newState = state
         newState.playerMana -= spell.cost
-        newState.spentMana += spell.cost
         spell.effect(newState)
         applyEffects(newState)
-        if newState.bossHealth <= 0:
-          result = newState.spentMana
-          continue
         newState.playerHealth -= max(1, newState.bossDamage - newState.playerArmor)
-        if newState.playerHealth > 0:
-          states.add(newState)
+        if newState.boss_health <= 0 or newState.playerHealth > 0:
+          yield (spell.cost, newState)
+
+proc minCostToWin(input: string, hard: bool): int =
+  for (d, st) in dijkstra(parseBoss(input, hard), neighbors):
+    if st.bossHealth <= 0:
+      return d
 
 proc part1*(input: string): int =
-  minCostToWin(parseBoss(input), false)
+  minCostToWin(input, false)
 
 proc part2*(input: string): int =
-  minCostToWin(parseBoss(input), true)
+  minCostToWin(input, true)
