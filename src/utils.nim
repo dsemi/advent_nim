@@ -1,4 +1,5 @@
 import algorithm
+import bitops
 import deques
 import heapqueue
 import macros
@@ -299,3 +300,9 @@ proc intersect*[K, V](a, b: Table[K, V], f: (V, V) -> V = first): Table[K, V] =
       result.del(k)
     else:
       result[k] = f(result[k], b[k])
+
+iterator bits*(n: SomeInteger): int =
+  var n = n
+  while n > 0:
+    yield n.countTrailingZeroBits
+    n = n and (n - 1)
