@@ -50,15 +50,15 @@ proc getArgs(prog: var Program, n: int): seq[int] =
 
 proc parseInstr(prog: var Program): Instr =
   case prog[prog.ip] mod 100:
-    of 1: Instr(kind: Add, args: prog.getArgs(3))
-    of 2: Instr(kind: Mul, args: prog.getArgs(3))
-    of 3: Instr(kind: Sav, args: prog.getArgs(1))
-    of 4: Instr(kind: Out, args: prog.getArgs(1))
-    of 5: Instr(kind: Jit, args: prog.getArgs(2))
-    of 6: Instr(kind: Jif, args: prog.getArgs(2))
-    of 7: Instr(kind: Lt, args: prog.getArgs(3))
-    of 8: Instr(kind: Eql, args: prog.getArgs(3))
-    of 9: Instr(kind: Arb, args: prog.getArgs(1))
+    of  1: Instr(kind: Add, args: prog.getArgs(3))
+    of  2: Instr(kind: Mul, args: prog.getArgs(3))
+    of  3: Instr(kind: Sav, args: prog.getArgs(1))
+    of  4: Instr(kind: Out, args: prog.getArgs(1))
+    of  5: Instr(kind: Jit, args: prog.getArgs(2))
+    of  6: Instr(kind: Jif, args: prog.getArgs(2))
+    of  7: Instr(kind:  Lt, args: prog.getArgs(3))
+    of  8: Instr(kind: Eql, args: prog.getArgs(3))
+    of  9: Instr(kind: Arb, args: prog.getArgs(1))
     of 99: Instr(kind: Hlt)
     else: raiseAssert "Unknown op code: " & $prog[prog.ip]
 
