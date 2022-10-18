@@ -1,4 +1,5 @@
 import httpclient
+import json
 import macros
 import options
 import os
@@ -21,7 +22,7 @@ proc downloadInput(url: string, outFile: string) =
   let dir = parentDir(outFile)
   if not dirExists(dir):
     createDir(dir)
-  downloadFile(client, url, outFile)
+  client.downloadFile(url, outFile)
   lastCall = getTime()
 
 proc getInput*(year: int, day: int, download: bool = false): string =
@@ -31,37 +32,22 @@ proc getInput*(year: int, day: int, download: bool = false): string =
     downloadInput(fmt"https://adventofcode.com/{year}/day/{day}/input", inputFile)
   readFile(inputFile).strip(leading = false)
 
-# Use SomeNumber
-# Could implement a `to` function for each type
-# Then add concept for something that has a `to` and recv that in wrap
-# Would allow for tuples of any valid type
+proc submitAnswer*(year, day, part: int, ans: string) =
+  let url = fmt"https://adventofcode.com/{year}/day/{day}/answer"
+  let data = %* {"level": part, "answer": ans}
+  var client = newHttpClient()
+  let cookie = getEnv("AOC_SESSION")
+  client.headers = newHttpHeaders({"Cookie": cookie})
+  echo client.postContent(url, $data)
 
-proc wrap(f: (string) -> string): (string) -> string = f
+proc to(x: string): string = x
+proc to(x: SomeNumber): string = $x
+proc to[T](x: Option[T]): string = x.get.to
+proc to[T](x: (T, T)): string = x[0].to & "," & x[1].to
+proc to[T](x: (T, T, T)): string = x[0].to & "," & x[1].to & "," & x[2].to
 
-proc wrap(f: (string) -> int): (string) -> string =
-  return proc(inp: string): string = $f(inp)
-
-proc wrap(f: (string) -> int64): (string) -> string =
-  return proc(inp: string): string = $f(inp)
-
-proc wrap(f: (string) -> uint16): (string) -> string =
-  return proc(inp: string): string = $f(inp)
-
-proc wrap(f: (string) -> uint64): (string) -> string =
-  return proc(inp: string): string = $f(inp)
-
-proc wrap(f: (string) -> Option[int]): (string) -> string =
-  return proc(inp: string): string = $f(inp).get
-
-proc wrap(f: (string) -> (int, int)): (string) -> string =
-  return proc(inp: string): string =
-    let (a, b) = f(inp)
-    $a & "," & $b
-
-proc wrap(f: (string) -> (int, int, int)): (string) -> string =
-  return proc(inp: string): string =
-    let (a, b, c) = f(inp)
-    $a & "," & $b & "," & $c
+proc wrap[T](f: (string) -> T): (string) -> string =
+  return proc(inp: string): string = inp.f.to
 
 macro genProblems(s: untyped): untyped =
   result = newNimNode(nnkStmtList)

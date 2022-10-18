@@ -1,5 +1,6 @@
 import algorithm
 import fusion/matching
+import options
 import os
 import parsetoml
 import sequtils
@@ -31,10 +32,10 @@ proc timeit(f: (string) -> string, inp: string): (string, float) =
   let t = endT - startT
   return (ans, float(t.inMicroseconds) / 1_000_000)
 
-proc run(year: int, day: int): float =
+proc run(year: int, day: int): Option[(float, string, string)] =
   if year notin probs or day notin probs[year]:
     echo fmt"{year} Day {day} not implemented"
-    return 0
+    return none((float, string, string))
   let contents = getInput(year, day, true)
   echo fmt"Day {day}"
   let outstr = "Part $1: $2  Elapsed time $3 seconds"
@@ -43,7 +44,7 @@ proc run(year: int, day: int): float =
   let (ans2, t2) = timeit(probs[year][day][1], contents)
   echo outstr.format(2, align(ans2, 50), colorizeTime(t2))
   echo ""
-  t1 + t2
+  some((t1 + t2, ans1, ans2))
 
 if commandLineParams()[0] == "test":
   let expectedAnswers = parseFile("tests/expectedAnswers.toml")
@@ -65,6 +66,19 @@ if commandLineParams()[0] == "test":
           expected = expectedAnswers[$y][$d]["part2"].getStr
           actual = f[1](input)
           check(expected == actual)
+elif commandLineParams()[0] == "submit":
+  let args = commandLineParams()[1 .. ^1]
+  doAssert args.len == 2
+  let year = args[0].parseInt
+  let day = args[1].parseInt
+  let res = run(year, day)
+  if res.isSome:
+    let (_, a1, a2) = res.get
+    let (part, ans) = if a2 == "" or a2 == "0":
+                        (1, a1)
+                      else:
+                        (2, a2)
+    submitAnswer(year, day, part, ans)
 else:
   let year = commandLineParams()[0].parseInt
   var total = 0.0
@@ -78,11 +92,13 @@ else:
                else:
                  @[daystr.parseInt]
     for day in days:
-      let t = run(year, day)
-      total += t
-      if t > mx:
-        mx = t
-        md = day
+      let res = run(year, day)
+      if res.isSome:
+        let t = res.get[0]
+        total += t
+        if t > mx:
+          mx = t
+          md = day
 
   echo fmt"Max: Day {md:2} {mx:66.3f} seconds"
   echo fmt"Total: {total:71.3f} seconds"
