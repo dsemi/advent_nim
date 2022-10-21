@@ -2,41 +2,50 @@ import fusion/matching
 import sequtils
 import strutils
 
-type Coord4 = tuple
-  w: int
-  x: int
-  y: int
-  z: int
+type Node = object
+  pt: (int, int, int, int)
+  parent: uint16
+  rank: int
 
-proc parsePoints(input: string): seq[Coord4] =
-  for line in input.splitLines:
+proc parsePoints(input: string): seq[Node] =
+  for (i, line) in pairs(input.splitLines):
     [@a, @b, @c, @d] := line.split(',').map(parseInt)
-    result.add((a, b, c, d))
+    result.add(Node(pt: (a, b, c, d), parent: uint16(i)))
 
-proc dist(a, b: Coord4): int =
-  abs(a.w - b.w) + abs(a.x - b.x) + abs(a.y - b.y) + abs(a.z - b.z)
+proc dist(a, b: Node): int =
+  abs(a.pt[0] - b.pt[0]) + abs(a.pt[1] - b.pt[1]) + abs(a.pt[2] - b.pt[2]) + abs(a.pt[3] - b.pt[3])
 
-proc constellations(pts: seq[Coord4]): seq[seq[Coord4]] =
-  if pts.len == 0:
-    return @[]
-  var neighbs = pts[0..0]
-  var rest = pts[1..^1]
-  var changed = true
-  while changed:
-    changed = false
-    var rest2: seq[Coord4]
-    for p in rest:
-      if neighbs.anyIt(it.dist(p) <= 3):
-        changed = true
-        neighbs.add(p)
-      else:
-        rest2.add(p)
-    rest = rest2
-  result = @[neighbs]
-  result.add(constellations(rest))
+proc find(points: seq[Node], k: uint16): uint16 =
+  result = k
+  while result != points[result].parent:
+    result = points[result].parent
+
+proc union(points: var seq[Node], x, y: uint16) =
+  let xRoot = find(points, x)
+  let yRoot = find(points, y)
+  if xRoot == yRoot:
+    return
+  if points[xRoot].rank < points[yRoot].rank:
+    points[xRoot].parent = yRoot
+  elif points[xRoot].rank > points[yRoot].rank:
+    points[yRoot].parent = xRoot
+  else:
+    points[yRoot].parent = xRoot
+    points[xRoot].rank += 1
+
+proc constellations(pts: var seq[Node]): int =
+  for i in pts.low .. pts.high:
+    for j in i+1 .. pts.high:
+      if dist(pts[i], pts[j]) <= 3:
+        union(pts, uint16(i), uint16(j))
+  var s: set[uint16]
+  for p in pts.low .. pts.high:
+    s.incl(find(pts, uint16(p)))
+  s.card
 
 proc part1*(input: string): int =
-  input.parsePoints.constellations.len
+  var pts = parsePoints(input)
+  constellations(pts)
 
 proc part2*(input: string): string =
   " "
