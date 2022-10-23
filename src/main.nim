@@ -27,8 +27,6 @@ proc timeit(f: (string) -> string, inp: string): (string, float) =
   let startT = getMonoTime()
   var ans = f(inp)
   let endT = getMonoTime()
-  if ans == "":
-    ans = "Not implemented"
   let t = endT - startT
   return (ans, float(t.inMicroseconds) / 1_000_000)
 
