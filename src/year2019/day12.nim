@@ -2,6 +2,7 @@ import math
 import sequtils
 import strscans
 import strutils
+import sugar
 
 type Moon = object
   pos: seq[int]
@@ -32,8 +33,8 @@ proc findCycle(moons: seq[Moon]): int =
   var ms = moons
   for i in 1..int.high:
     ms.step
-    if ms == moons:
-      return i
+    if ms.all((m) => m.vel.allIt(it == 0)):
+      return i*2
 
 proc part2*(input: string): int =
   let moons = input.parseMoons
