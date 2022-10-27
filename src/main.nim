@@ -30,6 +30,19 @@ proc timeit(f: (string) -> string, inp: string): (string, float) =
   let t = endT - startT
   return (ans, float(t.inMicroseconds) / 1_000_000)
 
+proc printOutput(part: int, output: string, t: float) =
+  stdout.write fmt"Part {part}: "
+  let lns = output.splitLines
+  let length = lns.len
+  for i, ln in lns:
+    if i == length - 1:
+      if i == 0:
+        echo "$1  Elapsed time $2 seconds".format(align(ln, 54), colorizeTime(t))
+      else:
+        echo "$1  Elapsed time $2 seconds".format(alignLeft(ln, 62), colorizeTime(t))
+    else:
+      echo ln
+
 proc run(year: int, day: int): Option[(float, string, string)] =
   if year notin probs or day notin probs[year]:
     echo fmt"{year} Day {day} not implemented"
@@ -38,9 +51,9 @@ proc run(year: int, day: int): Option[(float, string, string)] =
   echo fmt"Day {day}"
   let outstr = "Part $1: $2  Elapsed time $3 seconds"
   let (ans1, t1) = timeit(probs[year][day][0], contents)
-  echo outstr.format(1, align(ans1, 50), colorizeTime(t1))
+  printOutput(1, ans1, t1)
   let (ans2, t2) = timeit(probs[year][day][1], contents)
-  echo outstr.format(2, align(ans2, 50), colorizeTime(t2))
+  printOutput(2, ans2, t2)
   echo ""
   some((t1 + t2, ans1, ans2))
 
@@ -98,5 +111,5 @@ else:
           mx = t
           md = day
 
-  echo fmt"Max: Day {md:2} {mx:66.3f} seconds"
-  echo fmt"Total: {total:71.3f} seconds"
+  echo fmt"Max: Day {md:2} {mx:70.3f} seconds"
+  echo fmt"Total: {total:75.3f} seconds"
