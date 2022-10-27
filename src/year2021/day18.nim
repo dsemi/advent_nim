@@ -3,78 +3,68 @@ import streams
 import strutils
 
 type
-  Kind = enum
-    Reg, Pair
-  Snailfish = ref object
-    case kind: Kind
-    of Reg: v: int
-    of Pair: l, r: Snailfish
+  Num = tuple
+    depth: int
+    value: int
+  Fish = seq[Num]
 
-proc parse(line: StringStream): Snailfish =
+proc parse(line: StringStream, depth: int = 0): Fish =
   if line.peekChar == '[':
     discard line.readChar
-    let left = line.parse
+    result.add(line.parse(depth + 1))
     discard line.readChar
-    let right = line.parse
+    result.add(line.parse(depth + 1))
     discard line.readChar
-    Snailfish(kind: Pair, l: left, r: right)
   else:
     var n = 0
     while line.peekChar in '0'..'9':
       n = n * 10 + line.readChar.ord - '0'.ord
-    Snailfish(kind: Reg, v: n)
+    result.add(@[(depth, n)])
 
-proc exp(fish: var Snailfish, prev: var ptr int, next: var int, depth: int): bool =
-  case fish.kind
-  of Reg:
-    if next != -1:
-      fish.v += next
+proc explode(fish: var Fish): bool =
+  for i, f in fish.mpairs:
+    if f.depth > 4:
+      if i > 0:
+        fish[i-1].value += f.value
+      if i + 2 < fish.len:
+        fish[i+2].value += fish[i+1].value
+      fish.delete(i+1)
+      f.value = 0
+      f.depth -= 1
       return true
-    prev = addr fish.v
-  of Pair:
-    if next == -1 and depth == 4:
-      if prev != nil:
-        prev[] += fish.l.v
-        prev = nil
-      next = fish.r.v
-      fish = Snailfish(kind: Reg, v: 0)
-    else:
-      return exp(fish.l, prev, next, depth + 1) or exp(fish.r, prev, next, depth + 1)
 
-proc explode(fish: var Snailfish): bool =
-  var prev: ptr int
-  var next = -1
-  exp(fish, prev, next, 0) or next != -1
-
-proc split(fish: var Snailfish): bool =
-  case fish.kind
-  of Reg:
-    if fish.v > 9:
-      fish = Snailfish(kind: Pair,
-                       l: Snailfish(kind: Reg, v: fish.v div 2),
-                       r: Snailfish(kind: Reg, v: (fish.v + 1) div 2))
+proc split(fish: var Fish): bool =
+  for i, f in fish.mpairs:
+    if f.value > 9:
+      let (depth, val) = f
+      f.value = val div 2
+      f.depth = depth + 1
+      fish.insert((depth+1, (val + 1) div 2), i+1)
       return true
-  of Pair:
-    return split(fish.l) or split(fish.r)
 
-proc mag(fish: Snailfish): int =
-  case fish.kind
-  of Reg: fish.v
-  of Pair: 3 * mag(fish.l) + 2 * mag(fish.r)
-
-proc add(a, b: Snailfish): Snailfish =
-  result = Snailfish(kind: Pair, l: a, r: b)
+proc plus(a, b: Fish): Fish =
+  result.add(a)
+  result.add(b)
+  for v in result.mitems:
+    v.depth += 1
   while result.explode or result.split:
     discard
 
+proc mag(a: var Fish): int =
+  while a.len > 1:
+    for i in a.low .. a.high - 1:
+      if a[i].depth == a[i+1].depth:
+        a[i] = (a[i].depth-1, 3*a[i].value + 2*a[i+1].value)
+        a.delete(i+1)
+        break
+  a[0].value
+
 proc part1*(input: string): int =
-  input.splitlines.mapIt(it.newStringStream.parse).foldl(add(a, b)).mag
+  input.splitlines.mapIt(it.newStringStream.parse).foldl(plus(a, b)).mag
 
 proc part2*(input: string): int =
   let ns = input.splitlines.mapIt(it.newStringStream.parse)
   for a in ns:
     for b in ns:
-      var c, d: Snailfish
-      deepCopy(c, a)
-      deepCopy(d, b)
-      result = max(result, add(c, d).mag)
+      var x = plus(a, b)
+      result = max(result, x.mag)
