@@ -2,31 +2,42 @@ import sequtils
 import strutils
 import sugar
 
-import "../utils.nim"
+proc parse(input: string): seq[seq[int8]] =
+  input.splitLines.map((line) => line.mapIt(int8(it.ord - '0'.ord)))
 
-proc neighbs(grid: seq[seq[int]]): auto =
-  return proc(pos: Coord): iterator(): (int, Coord) =
-    return iterator(): (int, Coord) =
-      for d in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
-        let p = pos + d
-        if p.x in 0 ..< grid.len and p.y in 0 ..< grid[p.x].len:
-          yield (grid[p.x][p.y], p)
+proc dijkstra(grid: openArray[seq[int8]]): int =
+  let dim = grid.len + 2
+  var lookup = newSeq[int](dim * dim)
+  for r, row in grid:
+    for c, v in row:
+      lookup[dim * (r+1) + c + 1] = v
+  let goal = dim * dim - dim - 2
+  var q = newSeqWith(16, newSeq[int]())
+  var tmp = newSeq[int]()
+  q[0].add(dim * 1 + 1)
+  for qi in 0..int.high:
+    tmp.setLen(0)
+    swap(q[qi mod 16], tmp)
+    for p in tmp:
+      if lookup[p] < 1:
+        continue
+      if p == goal:
+        return qi
+      lookup[p] *= -1
+      for n in [p-1, p+1, p-dim, p+dim]:
+        if lookup[n] >= 1:
+          q[(qi + lookup[n]) mod 16].add(n)
 
 proc part1*(input: string): int =
-  let grid = input.splitlines.map((line) => line.mapIt(it.ord - '0'.ord))
-  for (d, p) in dijkstra((0, 0), neighbs(grid)):
-    if p == (grid.len - 1, grid.len - 1):
-      return d
+  dijkstra(parse(input))
 
 proc part2*(input: string): int =
-  var grid = input.splitlines.map((line) => line.mapIt(it.ord - '0'.ord))
+  var grid = parse(input)
   let (rows, cols) = (grid.len, grid[0].len)
   for row in grid.mitems:
     for i in 1 .. 4:
-      row.add(row[0..<cols].mapIt((it + i - 1) mod 9 + 1))
+      row.add(row[0..<cols].mapIt(int8((it + i - 1) mod 9 + 1)))
   for i in 1 .. 4:
     for row in grid[0..<rows]:
-      grid.add(row.mapIt((it + i - 1) mod 9 + 1))
-  for (d, p) in dijkstra((0, 0), neighbs(grid)):
-    if p == (grid.len - 1, grid.len - 1):
-      return d
+      grid.add(row.mapIt(int8((it + i - 1) mod 9 + 1)))
+  dijkstra(grid)
