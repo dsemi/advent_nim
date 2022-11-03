@@ -1,34 +1,69 @@
+import intsets
 import strscans
 import strutils
-import tables
 
-proc solve(input: string, lo, hi: int): int =
-  var cubes: CountTable[(int, int, int, int, int, int)]
-  for line in input.splitlines:
+type Interval = object
+  lo: int64
+  hi: int64
+
+proc intersects(a, b: Interval): bool =
+  a.lo < b.hi and b.lo < a.hi
+
+proc intersect(a, b: Interval): Interval =
+  Interval(lo: max(a.lo, b.lo), hi: min(a.hi, b.hi))
+
+proc len(a: Interval): int64 =
+  a.hi - a.lo
+
+type Cube = object
+  axis: array[3, Interval]
+
+proc volume(a: Cube): int64 =
+  result = 1
+  for i in a.axis:
+    result *= i.len
+
+proc intersects(a, b: Cube): bool =
+  result = true
+  for i in a.axis.low .. a.axis.high:
+    if not a.axis[i].intersects(b.axis[i]):
+      return false
+
+proc intersect(a, b: Cube): Cube =
+  for i, v in result.axis.mpairs:
+    v = a.axis[i].intersect(b.axis[i])
+
+proc solve(input: string, lo, hi: int): int64 =
+  let activeCube = Cube(axis: [Interval(lo: lo, hi: hi), Interval(lo: lo, hi: hi), Interval(lo: lo, hi: hi)])
+  var cubes = newSeq[Cube]()
+  var on = newSeq[bool]()
+  for line in input.splitLines:
     var w: string
-    var nx0, nx1, ny0, ny1, nz0, nz1: int
-    doAssert line.scanf("$* x=$i..$i,y=$i..$i,z=$i..$i", w, nx0, nx1, ny0, ny1, nz0, nz1)
-    var update: CountTable[(int, int, int, int, int, int)]
-    for k, es in cubes.pairs:
-      let (ex0, ex1, ey0, ey1, ez0, ez1) = k
-      let (x0, x1) = (max(nx0, ex0), min(nx1, ex1))
-      let (y0, y1) = (max(ny0, ey0), min(ny1, ey1))
-      let (z0, z1) = (max(nz0, ez0), min(nz1, ez1))
-      if x0 <= x1 and y0 <= y1 and z0 <= z1:
-        update.inc((x0, x1, y0, y1, z0, z1), -es)
-    if w == "on":
-      update.inc((nx0, nx1, ny0, ny1, nz0, nz1))
-    for k, v in update.pairs:
-      cubes.inc(k, v)
-  for k, s in cubes:
-    let (ox0, ox1, oy0, oy1, oz0, oz1) = k
-    let (x0, x1) = (max(lo, ox0), min(hi, ox1))
-    let (y0, y1) = (max(lo, oy0), min(hi, oy1))
-    let (z0, z1) = (max(lo, oz0), min(hi, oz1))
-    result += max(0, x1 - x0 + 1) * max(0, y1 - y0 + 1) * max(0, z1 - z0 + 1) * s
+    var x0, x1, y0, y1, z0, z1: int
+    doAssert line.scanf("$* x=$i..$i,y=$i..$i,z=$i..$i", w, x0, x1, y0, y1, z0, z1)
+    let cube = Cube(axis: [Interval(lo: x0, hi: x1+1), Interval(lo: y0, hi: y1+1), Interval(lo: z0, hi: z1+1)])
+    on.add(w == "on" and cube.intersects(activeCube))
+    cubes.add(cube)
+  var bs = newSeq[IntSet](cubes.len)
+  for i in 0 ..< cubes.len:
+    for j in 0 ..< i:
+      if cubes[i].intersects(cubes[j]):
+        bs[j].incl(i)
 
-proc part1*(input: string): int =
-  solve(input, -50, 50)
+  proc intersectVolume(cube: Cube, s: IntSet): int64 =
+    result = cube.volume
+    for idx in s:
+      let common = cube.intersect(cubes[idx])
+      let inter = s * bs[idx]
+      result -= intersectVolume(common, inter)
 
-proc part2*(input: string): int =
+  for i in 0 ..< cubes.len:
+    if not on[i]:
+      continue
+    result += intersectVolume(cubes[i], bs[i])
+
+proc part1*(input: string): int64 =
+  solve(input, -50, 51)
+
+proc part2*(input: string): int64 =
   solve(input, int.low, int.high)
