@@ -49,7 +49,6 @@ proc run(year: int, day: int): Option[(float, string, string)] =
     return none((float, string, string))
   let contents = getInput(year, day, true)
   echo fmt"Day {day}"
-  let outstr = "Part $1: $2  Elapsed time $3 seconds"
   let (ans1, t1) = timeit(probs[year][day][0], contents)
   printOutput(1, ans1, t1)
   let (ans2, t2) = timeit(probs[year][day][1], contents)
