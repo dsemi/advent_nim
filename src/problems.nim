@@ -34,11 +34,11 @@ proc getInput*(year: int, day: int, download: bool = false): string =
 
 proc submitAnswer*(year, day, part: int, ans: string) =
   let url = fmt"https://adventofcode.com/{year}/day/{day}/answer"
-  let data = %* {"level": part, "answer": ans}
+  let data = fmt"level={part}&answer={ans}"
   var client = newHttpClient()
   let cookie = getEnv("AOC_SESSION")
-  client.headers = newHttpHeaders({"Cookie": cookie})
-  echo client.postContent(url, $data)
+  client.headers = newHttpHeaders({"Cookie": cookie, "content-type": "application/x-www-form-urlencoded"})
+  echo client.postContent(url, data)
 
 proc to(x: string): string = x
 proc to(x: SomeNumber): string = $x
