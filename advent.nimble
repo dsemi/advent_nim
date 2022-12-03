@@ -9,7 +9,6 @@ requires "fusion >= 1.1"
 requires "nim >= 1.6.6"
 requires "itertools >= 0.4.0"
 requires "parsetoml >= 0.6.0"
-requires "regex >= 0.19.0"
 requires "zerofunctional >= 1.2.1"
 
 task test, "Runs the test suite":
