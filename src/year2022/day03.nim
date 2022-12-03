@@ -1,5 +1,5 @@
-import strutils
 import sequtils
+import strutils
 
 const s = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -12,7 +12,7 @@ proc part1*(input: string): int =
 
 proc part2*(input: string): int =
   let comps = input.splitLines
-  for i in countup(0, comps.len - 3, 3):
+  for i in countup(0, comps.high, 3):
     var a, b, c: set[char]
     for x in comps[i]: a.incl(x)
     for x in comps[i+1]: b.incl(x)
