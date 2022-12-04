@@ -9,6 +9,7 @@ import strutils
 import sugar
 import tables
 import times
+import uri
 import xmltree
 
 const fetchIntervalMs = 5000
@@ -36,11 +37,11 @@ proc getInput*(year: int, day: int, download: bool = false): string =
 
 proc submitAnswer*(year, day, part: int, ans: string) =
   let url = fmt"https://adventofcode.com/{year}/day/{day}/answer"
-  let data = fmt"level={part}&answer={ans}"
+  let data = {"level": $part, "answer": ans}
   var client = newHttpClient()
   let cookie = getEnv("AOC_SESSION")
   client.headers = newHttpHeaders({"Cookie": cookie, "content-type": "application/x-www-form-urlencoded"})
-  let resp = client.postContent(url, data)
+  let resp = client.postContent(url, data.encodeQuery)
   try:
     echo resp.parseHtml.child("html").child("body").child("main").child("article").child("p").innerText
   except:
