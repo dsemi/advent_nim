@@ -1,13 +1,14 @@
-import md5
 import threadpool
 {.experimental: "parallel".}
 
+{.passl: "-lssl -lcrypto".}
+{.compile("src/year2016/md5.c", "-mavx2 -Ofast").}
+proc md5sum(data: openArray[char], output: ptr char, stretch: csize_t) {.importc.}
+
 const batchSize = 1000
 
-proc hashNum(seed: string, n: int, num: int): string =
-  result = (seed & $n).getMD5
-  for _ in 1..num:
-    result = result.getMD5
+proc hashNum(seed: string, n: int, num: int): array[32, char] =
+  md5sum(seed & $n, addr result[0], uint(num))
 
 proc idx(c: char): int =
   if c in '0'..'9':
@@ -17,12 +18,12 @@ proc idx(c: char): int =
 iterator findIndexes(seed: string, num: int = 0): int =
   var pot: array[16, seq[int]]
   for i1 in countup(0, int.high, batchSize):
-    var arr = newSeq[FlowVar[string]](batchSize)
+    var arr = newSeq[array[32, char]](batchSize)
     parallel:
       for i in 0 .. arr.high:
         arr[i] = spawn hashNum(seed, i+i1, num)
     for i in i1..<i1+batchSize:
-      let hash = ^arr[i-i1]
+      let hash = arr[i-i1]
       for j in hash.low..hash.high-4:
         if hash[j] == hash[j+1] and hash[j] == hash[j+2] and
            hash[j] == hash[j+3] and hash[j] == hash[j+4]:

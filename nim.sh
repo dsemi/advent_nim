@@ -1,3 +1,3 @@
 #!/bin/bash
 
-make && ./main "$@"
+make -s && ./main "$@"
