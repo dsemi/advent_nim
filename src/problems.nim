@@ -1,3 +1,4 @@
+import htmlparser
 import httpclient
 import json
 import macros
@@ -8,6 +9,7 @@ import strutils
 import sugar
 import tables
 import times
+import xmltree
 
 const fetchIntervalMs = 5000
 
@@ -38,7 +40,12 @@ proc submitAnswer*(year, day, part: int, ans: string) =
   var client = newHttpClient()
   let cookie = getEnv("AOC_SESSION")
   client.headers = newHttpHeaders({"Cookie": cookie, "content-type": "application/x-www-form-urlencoded"})
-  echo client.postContent(url, data)
+  let resp = client.postContent(url, data)
+  try:
+    echo resp.parseHtml.child("html").child("body").child("main").child("article").child("p").innerText
+  except:
+    echo "Error getting relevant piece of html, outputting full response"
+    echo resp
 
 proc to(x: string): string = x
 proc to(x: SomeNumber): string = $x
