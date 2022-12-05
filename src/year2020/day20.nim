@@ -1,117 +1,130 @@
-import fusion/matching
+import algorithm
 import math
 import sequtils
-import sets
 import strutils
 import sugar
 import tables
 
-type Tile = (int, seq[seq[bool]])
+type
+  Grid = seq[seq[bool]]
+  Tile = object
+    num: int
+    grid: Grid
 
 proc parse(input: string): seq[Tile] =
   for part in input.split("\n\n"):
-    [@t, all @grid] := part.splitlines
-    result.add((t.split()[^1][0 .. ^2].parseInt, grid.map((row) => row.mapIt(it == '#'))))
+    let lns = part.splitLines
+    result.add(Tile(num: lns[0].split[^1][0..^2].parseInt,
+                    grid: lns[1..^1].mapIt(it.mapIt(it == '#'))))
 
-proc hashSide(arr: seq[bool]): int =
-  let narr = arr.mapIt(int(it))
-  min(narr.foldl(2 * a + b), narr.foldr(a + 2 * b))
+proc transpose(g: var Grid) =
+  for i in g.low .. g.high:
+    for j in i+1 .. g.high:
+      swap(g[i][j], g[j][i])
 
-proc findCorners(tiles: seq[Tile]): seq[int] =
-  var m = initTable[int, seq[int]]()
-  for (n, tile) in tiles:
-    m.mgetOrPut(hashSide(tile[0]), newSeq[int]()).add(n)
-    m.mgetOrPut(hashSide(tile[^1]), newSeq[int]()).add(n)
-    m.mgetOrPut(hashSide(tile.mapIt(it[0])), newSeq[int]()).add(n)
-    m.mgetOrPut(hashSide(tile.mapIt(it[^1])), newSeq[int]()).add(n)
-  var m2 = initCountTable[int]()
-  for k, v in m:
+iterator orientations(tile: Grid): Grid =
+  var t = tile
+  for _ in 0..3:
+    yield t
+    transpose(t)
+    yield t
+    t.reverse
+
+proc hashSide(arr: seq[bool]): uint16 =
+  arr.foldl(a shl 1 or b.uint16, 0u16)
+
+proc findCorners(tiles: seq[Tile]): (seq[int], Table[seq[bool], seq[Tile]]) =
+  for tile in tiles:
+    for t in orientations(tile.grid):
+      let hash = t.mapIt(it[0])
+      result[1].mgetOrPut(hash, newSeq[Tile]()).add(Tile(num: tile.num, grid: t))
+  var m = initCountTable[int]()
+  for v in result[1].values:
     if v.len == 1:
-      m2.inc(v[0])
-  for k, v in m2:
-    doAssert v <= 2
-    if v == 2:
-      result.add(k)
+      m.inc(v[0].num)
+  for k, v in m:
+    if v == 4:
+      result[0].add(k)
 
 proc part1*(input: string): int =
-  findCorners(parse(input)).prod
+  findCorners(parse(input))[0].prod
 
-let transforms = [
-  proc (m, x, y: int): (int, int) = (  x,   y),
-  proc (m, x, y: int): (int, int) = (m-x,   y),
-  proc (m, x, y: int): (int, int) = (  x, m-y),
-  proc (m, x, y: int): (int, int) = (m-x, m-y),
-  proc (m, x, y: int): (int, int) = (  y,   x),
-  proc (m, x, y: int): (int, int) = (m-y,   x),
-  proc (m, x, y: int): (int, int) = (  y, m-x),
-  proc (m, x, y: int): (int, int) = (m-y, m-x),
-]
+proc placeTiles(tiles: seq[Tile]): (seq[Tile], int) =
+  let size = tiles.len.float.sqrt.int
+  var grid = newSeq[Tile]()
+  let (corners, m) = findCorners(tiles)
+  var start: Tile
+  for tile in tiles:
+    if tile.num in corners:
+      start = tile
+      break
+  while m[start.grid.mapIt(it[^1])].len < 2 or m[start.grid[^1]].len < 2:
+    transpose(start.grid)
+    start.grid.reverse
+  for r in 0 ..< size:
+    for c in 0 ..< size:
+      if r == 0 and c == 0:
+        grid.add(start)
+      elif c == 0:
+        let prev = grid[(r-1)*size + c]
+        for t in m[prev.grid[^1]]:
+          if t.num != prev.num:
+            grid.add(t)
+            break
+        grid[^1].grid.transpose
+      else:
+        let prev = grid[r*size + c - 1]
+        for t in m[prev.grid.mapIt(it[^1])]:
+          if t.num != prev.num:
+            grid.add(t)
+            break
+  (grid, size)
 
-iterator orientations[A](tile: seq[seq[A]]): seq[seq[A]] =
-  for transform in transforms:
-    var tile2 = tile
-    for x in tile.low .. tile.high:
-      for y in tile[0].low .. tile[0].high:
-        let (x2, y2) = transform(tile.high, x, y)
-        tile2[x2][y2] = tile[x][y]
-    yield tile2
-
-proc placeTiles(tiles: seq[Tile]): (Table[(int, int), Tile], int) =
-  let corners = findCorners(tiles)
-  var t1, t2 = newSeq[Tile]()
-  for (n, t) in tiles:
-    if n in corners:
-      t1.add((n, t))
-    else:
-      t2.add((n, t))
-  let size = int(sqrt(float(tiles.len)))
-  proc go(c: int, m: var Table[(int, int), Tile], ta: seq[Tile], tb: seq[Tile]): bool =
-    let isCorner = c in [0, size-1, size*(size-1), size*size-1]
-    if ta.len == 0 and tb.len == 0:
-      return true
-    for (n, tile) in (if isCorner: ta else: tb):
-      for t in orientations(tile):
-        let row = c div size
-        let col = c mod size
-        if col > 0 and m[(row, col-1)][1].mapIt(it[^1]).zip(t.mapIt(it[0])).anyIt(it[0] != it[1]):
-          continue
-        if row > 0 and m[(row-1, col)][1][^1].zip(t[0]).anyIt(it[0] != it[1]):
-          continue
-        m[(row, col)] = (n, t)
-        if go(c+1, m,
-              if not isCorner: ta else: ta.filterIt(it[0] != n),
-              if isCorner: tb else: tb.filterIt(it[0] != n)):
-          return true
-  var m = initTable[(int, int), Tile]()
-  discard go(0, m, t1, t2)
-  (m, size)
+proc match(a, b: seq[bool]): bool {.inline.} =
+  for i, v in a:
+    if v and v != b[i]:
+      return false
+  true
 
 proc findSeaMonsters(p: seq[seq[bool]]): int =
   let monster = ["                  # ",
                  "#    ##    ##    ###",
                  " #  #  #  #  #  #   "]
+  let cnt = monster.mapIt(it.count('#')).sum
   let pts = collect(newSeq):
-    for r, row in monster:
-      for c, v in row:
-        if v == '#':
-          (r, c)
-  for arr in orientations(p):
-    let s = collect(initHashSet):
-      for r in 0 .. arr.len - 3:
-        for c in 0 .. arr[0].len - 20:
-          if pts.allIt(arr[it[0]+r][it[1]+c]):
-            for pos in pts.mapIt((it[0]+r, it[1]+c)):
-              {pos}
-    if s.len > 0:
-      return s.len
+    for row in monster:
+      collect(newSeq):
+        for v in row:
+          v == '#'
+  let (h, w) = (pts.len, pts[0].len)
+  for row in countup(0, p.len - h):
+    for j in countup(0, p[row].len - w):
+      var all = true
+      for i, line in pts:
+        if not match(line, p[row+i][j ..< j+w]):
+          all = false
+          break
+      if all:
+        result += cnt
 
 proc part2*(input: string): int =
-  let (m, sz) = placeTiles(parse(input))
-  let isz = m[(0, 0)][1].len - 2
-  let p = collect(newSeq):
-    for r in 0 ..< sz*isz:
-      collect(newSeq):
-        for c in 0 ..< sz*isz:
-          m[(r div isz, c div isz)][1][r mod isz + 1][c mod isz + 1]
-  let n = findSeaMonsters(p)
-  p.mapIt(it.count(true)).sum - n
+  var (grid, size) = placeTiles(parse(input))
+  var innerSize = 0
+  for tile in grid.mitems:
+    tile.grid = tile.grid[1..^2].mapIt(it[1..^2])
+    innerSize = tile.grid.len
+  var pic = newSeq[seq[bool]]()
+  for i in countup(0, grid.high, size):
+    for row in 0 ..< innerSize:
+      var r = newSeq[bool]()
+      for t in grid[i ..< i+size]:
+        r.add(t.grid[row])
+      pic.add(r)
+  for row in pic:
+    for v in row:
+      result += v.int
+  for p in orientations(pic):
+    let ms = findSeaMonsters(p)
+    if ms != 0:
+      result -= ms
+      break
