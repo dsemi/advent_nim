@@ -14,12 +14,10 @@ proc moveStacks(input: string, inOrder: bool): string =
   for line in pts[1].splitLines:
     var n, a, b: int
     doAssert line.scanf("move $i from $i to $i", n, a, b)
+    for _ in 1..n:
+      stacks[b-1].add(stacks[a-1].pop)
     if inOrder:
-      stacks[b-1].add(stacks[a-1][^n..^1])
-      stacks[a-1].setLen(stacks[a-1].len - n)
-    else:
-      for _ in 1..n:
-        stacks[b-1].add(stacks[a-1].pop)
+      stacks[b-1].reverse(stacks[b-1].len - n, stacks[b-1].len - 1)
   for stack in stacks:
     result.add(stack[^1])
 
