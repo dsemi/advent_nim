@@ -1,16 +1,10 @@
 import strutils
 
-type
-  D = ref object
-    dirs: seq[D]
-    size: int
-
 proc getAllSizes(input: string): seq[int] =
   template moveUp() =
-    result.add(fstree[^1].size)
-    fstree[^2].size += fstree[^1].size
-    discard fstree.pop
-  var fstree = @[D()]
+    fstree[^2] += fstree[^1]
+    result.add(fstree.pop)
+  var fstree = @[0]
   for line in input.splitLines:
     if line.startsWith("$ cd "):
       if line.endsWith("/"):
@@ -19,14 +13,12 @@ proc getAllSizes(input: string): seq[int] =
       elif line.endsWith(".."):
         moveUp
       else:
-        let sub = D()
-        fstree[^1].dirs.add(sub)
-        fstree.add(sub)
+        fstree.add(0)
     elif line.find({'0'..'9'}) == 0:
-      fstree[^1].size += line.split[0].parseInt
+      fstree[^1] += line.split[0].parseInt
   while fstree.len > 1:
     moveUp
-  result.add(fstree[0].size)
+  result.add(fstree[0])
 
 proc part1*(input: string): int =
   for size in input.getAllSizes:
