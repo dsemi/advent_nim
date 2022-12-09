@@ -1,4 +1,3 @@
-import math
 import sets
 import strutils
 
@@ -12,16 +11,15 @@ proc simRope(input: string, ropeLen: int): int =
     let pts = line.split
     for _ in 1..pts[1].parseInt:
       case pts[0][0]:
-        of 'L': knots[0] += (-1, 0)
-        of 'R': knots[0] += (1, 0)
-        of 'U': knots[0] += (0, 1)
-        of 'D': knots[0] += (0, -1)
+        of 'L': knots[0].x -= 1
+        of 'R': knots[0].x += 1
+        of 'U': knots[0].y += 1
+        of 'D': knots[0].y -= 1
         else: raiseAssert "impossible"
       for i in 1..knots.high:
         let diff = knots[i-1] - knots[i]
         if diff.x.abs > 1 or diff.y.abs > 1:
-          knots[i].x += sgn(diff.x)
-          knots[i].y += sgn(diff.y)
+          knots[i] += diff.sgn
       tailPos.incl(knots[^1])
   tailPos.len
 
