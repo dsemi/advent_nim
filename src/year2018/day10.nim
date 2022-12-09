@@ -35,11 +35,10 @@ proc findMessage(objs: seq[Obj]): (int, seq[Obj]) =
 proc showObjects(objs: seq[Obj]): string =
   let lights = objs.mapIt(it.pos).toHashSet
   let (x0, y0, x1, y1) = objs.boundingBox
-  result = "\n"
   for y in y0..y1:
+    result &= "\n"
     for x in x0..x1:
       result &= (if (x, y) in lights: '#' else: ' ')
-    result &= "\n"
 
 proc part1*(input: string): string =
   input.parseObjects.findMessage[1].showObjects
