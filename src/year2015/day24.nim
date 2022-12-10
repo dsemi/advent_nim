@@ -2,7 +2,7 @@ import math
 import sequtils
 import strutils
 
-import "../utils.nim"
+import "../utils"
 
 proc quantumEntanglement(n: int, input: string): int =
   let wts = input.split.map(parseInt)

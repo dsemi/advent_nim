@@ -1,7 +1,7 @@
 import math
 import strscans
 
-import "../utils.nim"
+import "../utils"
 
 proc hitsTarget(x0, x1, y0, y1, vx, vy: int): bool =
   var (vx, vy) = (vx, vy)

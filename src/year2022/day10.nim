@@ -1,6 +1,8 @@
 import std/enumerate
 import strutils
 
+import "../ocr"
+
 iterator run(input: string): int =
   var x = 1
   for tok in input.split:
@@ -15,7 +17,9 @@ proc part1*(input: string): int =
       result += cycle * x
 
 proc part2*(input: string): string =
+  var crt = ""
   for c, x in enumerate(input.run):
     if c mod 40 == 0:
-      result &= '\n'
-    result.add(if abs(c mod 40 - x) <= 1: '#' else: ' ')
+      crt &= '\n'
+    crt.add(if abs(c mod 40 - x) <= 1: '#' else: ' ')
+  crt.parseLetters

@@ -2,7 +2,7 @@ import math
 import sequtils
 import strutils
 
-import "../utils.nim"
+import "../utils"
 
 iterator allCombos(xs: seq[int]): int =
   for i in 1 .. xs.len:

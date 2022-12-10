@@ -2,7 +2,7 @@ import math
 import sequtils
 import strutils
 
-import "../utils.nim"
+import "../utils"
 
 proc parse(input: string): seq[int64] =
   input.splitlines.map(parseBiggestInt)

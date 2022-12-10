@@ -3,6 +3,7 @@ import sets
 import strscans
 import strutils
 
+import "../ocr"
 import "../utils"
 
 type Obj = object
@@ -35,10 +36,12 @@ proc findMessage(objs: seq[Obj]): (int, seq[Obj]) =
 proc showObjects(objs: seq[Obj]): string =
   let lights = objs.mapIt(it.pos).toHashSet
   let (x0, y0, x1, y1) = objs.boundingBox
+  var msg = ""
   for y in y0..y1:
-    result &= "\n"
+    msg &= "\n"
     for x in x0..x1:
-      result &= (if (x, y) in lights: '#' else: ' ')
+      msg &= (if (x, y) in lights: '#' else: ' ')
+  msg.parseLetters(large = true)
 
 proc part1*(input: string): string =
   input.parseObjects.findMessage[1].showObjects

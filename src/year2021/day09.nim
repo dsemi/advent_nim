@@ -5,7 +5,7 @@ import sets
 import strutils
 import sugar
 
-import "../utils.nim"
+import "../utils"
 
 iterator neighbs(grid: seq[seq[int]], c: Coord): Coord =
   for d in [(-1, 0), (1, 0), (0, -1), (0, 1)]:

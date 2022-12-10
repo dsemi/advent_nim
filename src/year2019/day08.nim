@@ -2,6 +2,7 @@ import sequtils
 import strutils
 import tables
 
+import "../ocr"
 import "../utils"
 
 proc part1*(input: string): int =
@@ -10,4 +11,4 @@ proc part1*(input: string): int =
 
 proc part2*(input: string): string =
   let pts = input.chunks(150).transpose.mapIt(it.foldl(if a != '2': a else: b))
-  "\n" & pts.mapIt(if it == '0': ' ' else: '#').chunks(25).mapIt(it.join).join("\n")
+  pts.mapIt(if it == '0': ' ' else: '#').chunks(25).mapIt(it.join).join("\n").parseLetters

@@ -4,7 +4,8 @@ import sets
 import strutils
 import sugar
 
-import "../utils.nim"
+import "../ocr"
+import "../utils"
 
 proc parse(input: string): (HashSet[Coord], string) =
   [@dots, @instrs] := input.split("\n\n", 1)
@@ -38,4 +39,4 @@ proc part2*(input: string): string =
   var display = @[""]
   for y in 0..my:
     display.add((0..mx).toSeq.mapIt(if (it, y) in paper: '#' else: ' ').join)
-  display.join("\n")
+  display.join("\n").parseLetters

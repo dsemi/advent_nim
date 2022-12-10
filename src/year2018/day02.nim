@@ -2,7 +2,7 @@ import sequtils
 import strutils
 import tables
 
-import "../utils.nim"
+import "../utils"
 
 proc part1*(input: string): int =
   let counts = input.splitLines.mapIt(it.toCountTable)

@@ -2,6 +2,7 @@ import fusion/matching
 import sequtils
 import tables
 
+import "../ocr"
 import "../utils"
 import "intcode"
 
@@ -32,11 +33,12 @@ proc draw(points: Table[Coord, int]): string =
     minY = min(minY, y)
     maxX = max(maxX, x)
     maxY = max(maxY, y)
-  result = ""
+  var panel = ""
   for y in minY..maxY:
-    result &= "\n"
+    panel &= "\n"
     for x in minX..maxX:
-      result &= (if points.getOrDefault((x, y), 0) == 0: ' ' else: '#')
+      panel &= (if points.getOrDefault((x, y), 0) == 0: ' ' else: '#')
+  panel.parseLetters
 
 proc part2*(input: string): string =
   var prog = input.parse

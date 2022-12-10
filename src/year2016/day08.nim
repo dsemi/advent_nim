@@ -4,6 +4,7 @@ import strscans
 import strutils
 import sugar
 
+import "../ocr"
 import "../utils"
 
 const
@@ -43,4 +44,4 @@ proc part2*(input: string): string =
         display[r].add('#')
       else:
         display[r].add(' ')
-  "\n" & display.mapIt(it.join).join("\n")
+  display.mapIt(it.join).join("\n").parseLetters

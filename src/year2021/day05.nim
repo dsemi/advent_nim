@@ -3,7 +3,7 @@ import re
 import sequtils
 import strutils
 
-import "../utils.nim"
+import "../utils"
 
 proc solve(input: string, p2: bool): int =
   var coords: seq[(Coord, Coord)]
