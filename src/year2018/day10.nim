@@ -41,7 +41,7 @@ proc showObjects(objs: seq[Obj]): string =
     msg &= "\n"
     for x in x0..x1:
       msg &= (if (x, y) in lights: '#' else: ' ')
-  msg.parseLetters(large = true)
+  msg.parseLetters
 
 proc part1*(input: string): string =
   input.parseObjects.findMessage[1].showObjects

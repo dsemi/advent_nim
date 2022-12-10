@@ -28,6 +28,16 @@ const largeK = """
 """
 const largeV = "ABCEFGHJKLNPRXZ"
 
+const specialK = """
+      ##        ##        ##    #    #  ####
+     #  #      #  #      #  #  # #  ##     #
+     #  #  ##  #            #  # #   #    #.
+     #### #  # #           #   # #   #    #.
+     #  # #  # #  #       #    # #   #   #..
+     #  #  ##   ##       ####   #   ###  #..
+"""
+const specialV = "AoC2017"
+
 proc separateLetters(input: string, fill = '#'): seq[string] =
   let input = input.strip(chars = Newlines)
   let subs = [(re($fill), "#"), (re"[^\n]", " ")]
@@ -47,12 +57,16 @@ proc separateLetters(input: string, fill = '#'): seq[string] =
 let
   smallLetters = separateLetters(smallK).zip(smallV).toTable
   largeLetters = separateLetters(largeK).zip(largeV).toTable
+  specialLetters = separateLetters(specialK).zip(specialV).toTable
 
-proc parseLetters*(input: string, fill = '#', large = false): string =
+proc parseLetters*(input: string, fill = '#'): string =
   let letters = input.separateLetters(fill = fill)
-  if large:
-    for letter in letters:
-      result &= largeLetters[letter]
-  else:
-    for letter in letters:
+  for letter in letters:
+    if letter in smallLetters:
       result &= smallLetters[letter]
+    elif letter in largeLetters:
+      result &= largeLetters[letter]
+    elif letter in specialLetters:
+      result &= specialLetters[letter]
+    else:
+      raiseAssert "Failed to parse letter: " & letter
