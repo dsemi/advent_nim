@@ -41,6 +41,7 @@ proc submitAnswer*(year, day, part: int, ans: string) =
   var client = newHttpClient()
   let cookie = getEnv("AOC_SESSION")
   client.headers = newHttpHeaders({"Cookie": cookie, "content-type": "application/x-www-form-urlencoded"})
+  echo fmt"Submitting {year} day {day} part {part}: {ans}"
   let resp = client.postContent(url, data.encodeQuery)
   try:
     echo resp.parseHtml.child("html").child("body").child("main").child("article").child("p").innerText

@@ -27,9 +27,7 @@ proc packet(bs: iterator(): int, vsum: var int): int =
     return n shl 4 or bs.num(4)
   var ns: seq[int]
   if bs.num(1) == 0:
-    let r = iterator(): int =
-              for _ in 1..bs.num(15):
-                yield bs()
+    let r = iterator(): int = (for _ in 1..bs.num(15): yield bs())
     while not finished(r):
       let p = packet(r, vsum)
       if p != -1:
