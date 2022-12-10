@@ -43,17 +43,19 @@ proc printOutput(part: int, output: string, t: float) =
     else:
       echo ln
 
-proc run(year: int, day: int): Option[(float, string, string)] =
+proc run(year: int, day: int, output: bool = true): Option[(float, string, string)] =
   if year notin probs or day notin probs[year]:
     echo fmt"{year} Day {day} not implemented"
     return none((float, string, string))
   let contents = getInput(year, day, true)
   echo fmt"Day {day}"
   let (ans1, t1) = timeit(probs[year][day][0], contents)
-  printOutput(1, ans1, t1)
+  if output:
+    printOutput(1, ans1, t1)
   let (ans2, t2) = timeit(probs[year][day][1], contents)
-  printOutput(2, ans2, t2)
-  echo ""
+  if output:
+    printOutput(2, ans2, t2)
+    echo ""
   some((t1 + t2, ans1, ans2))
 
 if commandLineParams()[0] == "test":
@@ -81,7 +83,7 @@ elif commandLineParams()[0] == "submit":
   doAssert args.len == 2
   let year = args[0].parseInt
   let day = args[1].parseInt
-  let res = run(year, day)
+  let res = run(year, day, output = false)
   if res.isSome:
     let (_, a1, a2) = res.get
     let (part, ans) = if a2 == "" or a2 == "0":
