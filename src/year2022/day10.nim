@@ -1,29 +1,22 @@
+import std/enumerate
 import strutils
-import sequtils
 
 iterator run(input: string): (int, int) =
-  var (cycle, x) = (1, 1)
-  for line in input.splitLines:
-    let pts = line.split
-    yield (cycle, x)
-    if pts[0] == "addx":
-      cycle += 1
-      yield (cycle, x)
-      cycle += 1
-      x += pts[1].parseInt
-    elif pts[0] == "noop":
-      cycle += 1
+  var x = 1
+  for i, tok in enumerate(input.split):
+    yield (i+1, x)
+    case tok
+    of "addx", "noop": discard
+    else: x += tok.parseInt
 
 proc part1*(input: string): int =
   for (cycle, x) in input.run:
     if cycle in {20, 60, 100, 140, 180, 220}:
       result += cycle * x
-    if cycle >= 220:
-      break
 
 proc part2*(input: string): string =
-  var lns = newSeqWith(6, newSeq[char](40))
+  result = "\n"
   for (cycle, x) in input.run:
-    let (r, pos) = ((cycle - 1) div 40, (cycle - 1) mod 40)
-    lns[r][pos] = if (pos - x).abs <= 1: '#' else: ' '
-  "\n" & lns.mapIt(it.join).join("\n")
+    result.add(if abs((cycle - 1) mod 40 - x) <= 1: '#' else: ' ')
+    if cycle < 240 and cycle mod 40 == 0:
+      result &= "\n"
