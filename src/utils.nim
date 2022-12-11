@@ -7,6 +7,7 @@ import math
 import options
 import sequtils
 import sets
+import strutils
 import sugar
 import tables
 
@@ -286,10 +287,32 @@ proc sum*(t: Tree[SomeInteger]): SomeInteger {.inline.} =
 
 # Scanf utils
 
-proc c*(input: string, charVal: var char, start: int): int =
-  if start+1 <= input.len:
-    charVal = input[start]
-    return 1
+proc dlist*(input: string, ns: var seq[int], start: int): int =
+  # return number of processed chars
+  var x = 0
+  var inN = false
+  var last = start
+  var final = input.len
+  for i in start..input.high:
+    if input[i] in Digits:
+      inN = true
+      x = x * 10 + input[i].ord - '0'.ord
+    elif input[i] == ',' or input[i] == ' ':
+      if inN:
+        ns.add(x)
+        x = 0
+        inN = false
+        last = i
+    else:
+      if inN and input[i] notin IdentChars:
+        final = i
+      else:
+        final = last
+        inN = false
+      break
+  if inN:
+    ns.add(x)
+  final - start
 
 proc first[T](a, b: T): T = a
 

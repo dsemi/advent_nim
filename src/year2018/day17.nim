@@ -21,7 +21,7 @@ proc parseScans(input: string): Ground =
     var t: Table[char, seq[int]]
     var c1, c2: char
     var v1, v2a, v2b: int
-    doAssert line.scanf("${c}=$i, ${c}=$i..$i", c1, v1, c2, v2a, v2b)
+    doAssert line.scanf("$c=$i, $c=$i..$i", c1, v1, c2, v2a, v2b)
     t[c1] = @[v1]
     t[c2] = toSeq(v2a..v2b)
     for x in t['x']:
