@@ -16,27 +16,25 @@ type Monkey = object
   falseNum: int
 
 const monkStr = """Monkey $i:
-  Starting items: ${dlist}
+  Starting items: ${ilist}
   Operation: new = old $c $*
   Test: divisible by $i
     If true: throw to monkey $i
     If false: throw to monkey $i"""
 
 proc parseMonkey(inp: string): Monkey =
-  var c: char
-  var op: string
-  doAssert inp.scanf(monkStr, result.num, result.heldItems, c, op,
+  var op: char
+  var arg: string
+  doAssert inp.scanf(monkStr, result.num, result.heldItems, op, arg,
                      result.divisor, result.trueNum, result.falseNum)
-  if op == "old":
+  if arg == "old":
     result.op = (b: int) => b * b
     return result
-  let n = op.parseInt
-  if c == '+':
-    result.op = (b: int) => b + n
-  elif c == '*':
-    result.op = (b: int) => b * n
-  else:
-    raiseAssert "Invalid operator: " & c
+  let n = arg.parseInt
+  case op
+  of '+': result.op = (b: int) => b + n
+  of '*': result.op = (b: int) => b * n
+  else: raiseAssert "Invalid operator: " & op
 
 proc solve(input: string, p2: bool): int =
   var mks = collect:

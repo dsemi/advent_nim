@@ -287,7 +287,7 @@ proc sum*(t: Tree[SomeInteger]): SomeInteger {.inline.} =
 
 # Scanf utils
 
-proc dlist*(input: string, ns: var seq[int], start: int): int =
+proc ilist*(input: string, ns: var seq[int], start: int): int =
   # return number of processed chars
   var x = 0
   var inN = false
