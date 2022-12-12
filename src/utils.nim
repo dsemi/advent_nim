@@ -55,6 +55,9 @@ iterator countup*(a, b: Coord): Coord =
     for y in countup(a.y, b.y):
       yield (x, y)
 
+proc `[]`*[T](grid: openArray[seq[T]], c: Coord): T {.inline.} =
+  grid[c.x][c.y]
+
 type Coord3* = tuple
   x: int
   y: int

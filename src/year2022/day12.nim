@@ -1,35 +1,28 @@
-import std/enumerate
+import sequtils
 import strutils
 
 import "../utils"
 
-proc solve(input: string, p2: bool): int =
+proc solve(input: string, sts: set[char]): int =
+  var grid = input.splitLines.mapIt(toSeq(it))
   var starts = newSeq[Coord]()
   var done: Coord
-  var grid: seq[seq[int]]
-  for r, line in enumerate(input.splitLines):
-    grid.add newSeq[int]()
-    for c, v in line:
-      case v
-      of 'S':
-        starts.add (r, c)
-        grid[^1].add(0)
-      of 'E':
+  for r, row in grid.mpairs:
+    for c, v in row.mpairs:
+      if v in sts: starts.add (r, c)
+      if v == 'S': v = 'a'
+      elif v == 'E':
         done = (r, c)
-        grid[^1].add(25)
-      else:
-        if p2 and v == 'a':
-          starts.add (r, c)
-        grid[^1].add(v.ord - 'a'.ord)
+        v = 'z'
 
   proc neighbors(pos: Coord): iterator: Coord =
     return iterator(): Coord =
-      let currH = grid[pos.x][pos.y]
+      let lim = (grid[pos].ord + 1).chr
       for d in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
         let pos2 = d + pos
         if pos2.x in grid.low..grid.high and
            pos2.y in grid[0].low..grid[0].high and
-           grid[pos2.x][pos2.y] <= currH + 1:
+           grid[pos2] <= lim:
           yield pos2
 
   for (d, p) in bfsM(starts, neighbors):
@@ -37,7 +30,7 @@ proc solve(input: string, p2: bool): int =
       return d
 
 proc part1*(input: string): int =
-  input.solve(false)
+  input.solve({'S'})
 
 proc part2*(input: string): int =
-  input.solve(true)
+  input.solve({'S', 'a'})
