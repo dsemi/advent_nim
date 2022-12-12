@@ -179,9 +179,9 @@ iterator dfs*[T](start: T, neighbors: T -> seq[T]): (int, T) =
         visited.incl(st2)
         frontier.add((d+1, st2))
 
-iterator bfs*[T](start: T, neighbors: T -> (iterator: T)): (int, T) =
-  var visited = toHashSet([start])
-  var frontier = toDeque([(0, start)])
+iterator bfsM*[T](starts: seq[T], neighbors: T -> (iterator: T)): (int, T) =
+  var visited = toHashSet(starts)
+  var frontier = toDeque(collect(for start in starts: (0, start)))
   while frontier.len > 0:
     let (d, st) = frontier.popFirst
     yield (d, st)
@@ -189,6 +189,10 @@ iterator bfs*[T](start: T, neighbors: T -> (iterator: T)): (int, T) =
       if st2 notin visited:
         visited.incl(st2)
         frontier.addLast((d+1, st2))
+
+iterator bfs*[T](start: T, neighbors: T -> (iterator: T)): (int, T) =
+  for x in bfsM(@[start], neighbors):
+    yield x
 
 iterator dijkstra*[T](start: T, neighbs: T -> (iterator: (int, T))): (int, T) =
   var dists: Table[T, int]

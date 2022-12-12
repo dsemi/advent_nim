@@ -32,12 +32,9 @@ proc solve(input: string, p2: bool): int =
            grid[pos2.x][pos2.y] <= currH + 1:
           yield pos2
 
-  result = int.high
-  for start in starts:
-    for (d, p) in bfs(start, neighbors):
-      if p == done:
-        result = min(result, d)
-        break
+  for (d, p) in bfsM(starts, neighbors):
+    if p == done:
+      return d
 
 proc part1*(input: string): int =
   input.solve(false)
