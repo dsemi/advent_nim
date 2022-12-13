@@ -20,7 +20,7 @@ proc solve(input: string, p2: bool): int =
       continue
     let d = (c1 - c).sgn
     while c != c1 + d:
-      grid[c.x][c.y] += 1
+      grid[c] += 1
       c += d
   for row in grid:
     for v in row:

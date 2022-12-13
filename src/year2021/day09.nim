@@ -18,7 +18,7 @@ iterator lows(grid: seq[seq[int]]): Coord =
     for c in 0..<grid[r].len:
       var all = true
       for n in neighbs(grid, (r, c)):
-        all = all and grid[r][c] < grid[n.x][n.y]
+        all = all and grid[r][c] < grid[n]
       if all:
         yield (r, c)
 
@@ -34,7 +34,7 @@ proc part2*(input: string): int =
   proc ns(c: Coord): iterator: Coord =
     return iterator(): Coord =
       for n in neighbs(grid, c):
-        if grid[n.x][n.y] != 9:
+        if grid[n] != 9:
           yield n
   for pt in lows(grid):
     var c: int

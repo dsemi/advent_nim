@@ -58,6 +58,9 @@ iterator countup*(a, b: Coord): Coord =
 proc `[]`*[T](grid: openArray[seq[T]], c: Coord): T {.inline.} =
   grid[c.x][c.y]
 
+proc `[]`*[T](grid: var openArray[seq[T]], c: Coord): var T {.inline.} =
+  grid[c.x][c.y]
+
 type Coord3* = tuple
   x: int
   y: int
@@ -182,7 +185,7 @@ iterator dfs*[T](start: T, neighbors: T -> seq[T]): (int, T) =
         visited.incl(st2)
         frontier.add((d+1, st2))
 
-iterator bfsM*[T](starts: seq[T], neighbors: T -> (iterator: T)): (int, T) =
+iterator bfsM*[T](starts: openArray[T], neighbors: T -> (iterator: T)): (int, T) =
   var visited = toHashSet(starts)
   var frontier = toDeque(collect(for start in starts: (0, start)))
   while frontier.len > 0:
