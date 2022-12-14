@@ -1,45 +1,42 @@
 import algorithm
 import math
+import pegs
 import sequtils
-import strscans
 import strutils
 import sugar
 
-import "../utils"
-
 type Monkey = object
-  num: int
   heldItems: seq[int]
   op: (b: int) -> int
   divisor: int
   trueNum: int
   falseNum: int
 
-const monkStr = """Monkey $i:
-  Starting items: ${ilist}
-  Operation: new = old $c $*
-  Test: divisible by $i
-    If true: throw to monkey $i
-    If false: throw to monkey $i"""
+let grammar = peg"""grammar <- header \n starting \n op \n test \n true \n false
+                    header <- 'Monkey ' \d+ ':'
+                    starting <- '  Starting items: ' {\d+ (', ' \d+)*}
+                    op <- '  Operation: new = old ' {.} ' ' {('old' / \d+)}
+                    test <- '  Test: divisible by ' {\d+}
+                    true <- '    If true: throw to monkey ' {\d+}
+                    false <- '    If false: throw to monkey ' {\d+}"""
 
 proc parseMonkey(inp: string): Monkey =
-  var op: char
-  var arg: string
-  doAssert inp.scanf(monkStr, result.num, result.heldItems, op, arg,
-                     result.divisor, result.trueNum, result.falseNum)
-  if arg == "old":
-    result.op = (b: int) => b * b
-    return result
-  let n = arg.parseInt
-  case op
-  of '+': result.op = (b: int) => b + n
-  of '*': result.op = (b: int) => b * n
-  else: raiseAssert "Invalid operator: " & op
+  if inp =~ grammar:
+    result.heldItems = matches[0].split(", ").map(parseInt)
+    if matches[2] == "old":
+      result.op = (b: int) => b * b
+    else:
+      let n = matches[2].parseInt
+      case matches[1][0]
+      of '+': result.op = (b: int) => b + n
+      of '*': result.op = (b: int) => b * n
+      else: raiseAssert "Invalid operator: " & matches[1][0]
+    result.divisor = matches[3].parseInt
+    result.trueNum = matches[4].parseInt
+    result.falseNum = matches[5].parseInt
 
 proc solve(input: string, p2: bool): int =
-  var mks = collect:
-    for blk in input.split("\n\n"):
-      parseMonkey(blk)
+  var mks = collect(for blk in input.split("\n\n"): parseMonkey(blk))
   let m = mks.mapIt(it.divisor).lcm
   var inspections = newSeq[int](mks.len)
   let iters = if p2: 10000 else: 20
@@ -47,9 +44,8 @@ proc solve(input: string, p2: bool): int =
     for i in mks.low .. mks.high:
       inspections[i] += mks[i].heldItems.len
       for it in mks[i].heldItems:
-        var worryLevel = mks[i].op(it)
-        if p2: worryLevel = worryLevel mod m
-        else: worryLevel = worryLevel div 3
+        let worryLevel = if p2: mks[i].op(it) mod m
+                         else: mks[i].op(it) div 3
         if worryLevel mod mks[i].divisor == 0:
           mks[mks[i].trueNum].heldItems.add(worryLevel)
         else:

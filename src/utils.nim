@@ -295,35 +295,6 @@ proc fold*[T](t: Tree[T], f: proc(a: T, b: T): T {.closure.}, init: T): T {.inli
 proc sum*(t: Tree[SomeInteger]): SomeInteger {.inline.} =
   t.val + t.children.mapIt(it.sum).sum
 
-# Scanf utils
-
-proc ilist*(input: string, ns: var seq[int], start: int): int =
-  # return number of processed chars
-  var x = 0
-  var inN = false
-  var last = start
-  var final = input.len
-  for i in start..input.high:
-    if input[i] in Digits:
-      inN = true
-      x = x * 10 + input[i].ord - '0'.ord
-    elif input[i] == ',' or input[i] == ' ':
-      if inN:
-        ns.add(x)
-        x = 0
-        inN = false
-        last = i
-    else:
-      if inN and input[i] notin IdentChars:
-        final = i
-      else:
-        final = last
-        inN = false
-      break
-  if inN:
-    ns.add(x)
-  final - start
-
 proc first[T](a, b: T): T = a
 
 proc intersect*[K, V](a, b: Table[K, V], f: (V, V) -> V = first): Table[K, V] =
