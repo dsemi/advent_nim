@@ -61,6 +61,9 @@ proc `[]`*[T](grid: openArray[seq[T]], c: Coord): T {.inline.} =
 proc `[]`*[T](grid: var openArray[seq[T]], c: Coord): var T {.inline.} =
   grid[c.x][c.y]
 
+proc `[]=`*[T](grid: var openArray[seq[T]], c: Coord, v: T) {.inline.} =
+  grid[c.x][c.y] = v
+
 type Coord3* = tuple
   x: int
   y: int
