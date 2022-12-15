@@ -20,26 +20,14 @@ proc parse(input: string): (seq[Sensor], IntSet) =
     result[0].add Sensor(pos: (sx, sy), dist: dist)
     if by == p1Row: result[1].incl bx
 
-type Interval = object
-  lo, hi: int
-
-proc intersects(a, b: Interval): bool =
-  a.lo <= b.hi and b.lo <= a.hi
-
-proc union(a, b: Interval): Interval =
-  Interval(lo: min(a.lo, b.lo), hi: max(a.hi, b.hi))
-
-proc len(i: Interval): int =
-  i.hi - i.lo + 1
-
 proc part1*(input: string): int =
   let (sensors, bs) = input.parse
   let y = 2000000
-  var intervals = newSeq[Interval]()
+  var intervals = newSeq[Interval[int]]()
   for sensor in sensors:
     let diff = sensor.dist - abs(sensor.pos.y - y)
     if diff < 0: continue
-    intervals.add Interval(lo: sensor.pos.x - diff, hi: sensor.pos.x + diff)
+    intervals.add Interval[int](lo: sensor.pos.x - diff, hi: sensor.pos.x + diff + 1)
   intervals = intervals.sortedByIt(it.lo)
   intervals = intervals.foldl(if intersects(a[^1], b): a[0..^2] & @[union(a[^1], b)]
                               else: a & @[b], @[intervals[0]])

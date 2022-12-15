@@ -313,3 +313,18 @@ iterator bits*(n: SomeInteger): int =
   while n > 0:
     yield n.countTrailingZeroBits
     n = n and (n - 1)
+
+type Interval*[T] = object
+  lo*, hi*: T
+
+proc intersects*[T](a, b: Interval[T]): bool =
+  a.lo < b.hi and b.lo < a.hi
+
+proc intersect*[T](a, b: Interval[T]): Interval[T] =
+  Interval[T](lo: max(a.lo, b.lo), hi: min(a.hi, b.hi))
+
+proc union*[T](a, b: Interval[T]): Interval[T] =
+  Interval[T](lo: min(a.lo, b.lo), hi: max(a.hi, b.hi))
+
+proc len*[T](a: Interval[T]): T =
+  a.hi - a.lo
