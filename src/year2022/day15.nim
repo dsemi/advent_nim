@@ -27,8 +27,7 @@ proc part1*(input: string): int =
     if diff < 0: continue
     intervals.add Interval[int](lo: sensor.pos.x - diff, hi: sensor.pos.x + diff + 1)
   let interval = intervals.sortedByIt(it.lo).foldl(union(a, b))
-  result += interval.len
-  for x in bs: result -= int(x in interval.lo..interval.hi)
+  interval.len - bs.countIt(it in interval.lo..<interval.hi)
 
 type Line = object
   s, e: Coord
