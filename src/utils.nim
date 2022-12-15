@@ -50,6 +50,9 @@ proc sum*(p: Coord): int =
 proc sgn*(p: Coord): Coord =
   (p.x.sgn, p.y.sgn)
 
+proc scale*(p: Coord, n: int): Coord =
+  (n * p.x, n * p.y)
+
 iterator countup*(a, b: Coord): Coord =
   for x in countup(a.x, b.x):
     for y in countup(a.y, b.y):
