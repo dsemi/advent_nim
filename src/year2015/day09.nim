@@ -2,11 +2,12 @@ import algorithm
 import fusion/matching
 import sequtils
 import strutils
-import tables
+
+import "../utils"
 
 iterator paths(input: string): int =
+  let ui = uniqueIdx()
   var adj: seq[seq[int]]
-  var m: Table[string, int]
   var cnt: int
   let lines = input.splitlines.len
   for l in 1 .. int.high:
@@ -16,13 +17,9 @@ iterator paths(input: string): int =
       break
   for line in input.splitlines:
     [@k1, _, @k2, _, @v] := line.split
-    if not m.hasKeyOrPut(k1, cnt):
-      inc cnt
-    if not m.hasKeyOrPut(k2, cnt):
-      inc cnt
     let n = v.parseInt
-    adj[m[k1]][m[k2]] = n
-    adj[m[k2]][m[k1]] = n
+    adj[ui(k1)][ui(k2)] = n
+    adj[ui(k2)][ui(k1)] = n
   var perm = toSeq(0 ..< adj.len)
   var run = true
   while run:

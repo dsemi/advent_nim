@@ -13,7 +13,7 @@ type Graph = ref object
 
 proc parse(input: string): (int, Graph) =
   let reg = re"Valve (\w+) has flow rate=(\d+); tunnels? leads? to valves? (.+)$"
-  var ui = uniqueIdx()
+  let ui = uniqueIdx()
   let valves = input.splitLines
   var dist = newSeqWith(valves.len, repeat(int.high, valves.len))
   var flowRates = newSeq[int](valves.len)
