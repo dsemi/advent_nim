@@ -331,3 +331,21 @@ proc union*[T](a, b: Interval[T]): Interval[T] =
 
 proc len*[T](a: Interval[T]): T =
   a.hi - a.lo
+
+proc uniqueIdx*(): proc(k: string): int =
+  var m = initTable[string, int]()
+  var cnt = 0
+  return proc(k: string): int =
+    if not m.hasKeyOrPut(k, cnt):
+      inc cnt
+    m[k]
+
+proc `|+|`*(a, b: int): int =
+  ## saturated addition.
+  result = a +% b
+  if (result xor a) >= 0'i64 or (result xor b) >= 0'i64:
+    return result
+  if a < 0 or b < 0:
+    result = low(typeof(result))
+  else:
+    result = high(typeof(result))
