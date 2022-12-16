@@ -8,9 +8,7 @@ import sugar
 type Monkey = object
   heldItems: seq[int]
   op: (b: int) -> int
-  divisor: int
-  trueNum: int
-  falseNum: int
+  divisor, trueIdx, falseIdx: int
 
 let grammar = peg"""grammar <- header \n starting \n op \n test \n true \n false
                     header <- 'Monkey ' \d+ ':'
@@ -32,8 +30,8 @@ proc parseMonkey(inp: string): Monkey =
       of '*': result.op = (b: int) => b * n
       else: raiseAssert "Invalid operator: " & matches[1][0]
     result.divisor = matches[3].parseInt
-    result.trueNum = matches[4].parseInt
-    result.falseNum = matches[5].parseInt
+    result.trueIdx = matches[4].parseInt
+    result.falseIdx = matches[5].parseInt
 
 proc solve(input: string, p2: bool): int =
   var mks = collect(for blk in input.split("\n\n"): parseMonkey(blk))
@@ -47,9 +45,9 @@ proc solve(input: string, p2: bool): int =
         let worryLevel = if p2: mks[i].op(it) mod m
                          else: mks[i].op(it) div 3
         if worryLevel mod mks[i].divisor == 0:
-          mks[mks[i].trueNum].heldItems.add(worryLevel)
+          mks[mks[i].trueIdx].heldItems.add(worryLevel)
         else:
-          mks[mks[i].falseNum].heldItems.add(worryLevel)
+          mks[mks[i].falseIdx].heldItems.add(worryLevel)
       mks[i].heldItems.setLen(0)
   inspections.sort(order = Descending)
   inspections[0] * inspections[1]
