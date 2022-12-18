@@ -5,9 +5,9 @@ import sugar
 
 import "../utils"
 
-proc adj(c: Coord3): seq[Coord3] =
+iterator adj(c: Coord3): Coord3 =
   for d in [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]:
-    result.add c + d
+    yield c + d
 
 proc cubes(input: string): HashSet[Coord3] =
   for line in input.splitLines:
@@ -30,9 +30,9 @@ proc part2*(input: string): int =
 
   proc neighbors(pos: Coord3): iterator: Coord3 =
     return iterator(): Coord3 =
-      for pos2 in pos.adj:
-        if pos2.x in lo.x..hi.x and pos2.y in lo.y..hi.y and pos2.z in lo.z..hi.z and pos2 notin lava:
-          yield pos2
+      for p in p.adj:
+        if p.x in lo.x..hi.x and p.y in lo.y..hi.y and p.z in lo.z..hi.z and p notin lava:
+          yield p
 
   let air = collect(for _, c in bfsM([lo, hi], neighbors): {c})
   for c in lava:
