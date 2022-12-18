@@ -101,6 +101,9 @@ proc sum*(p: Coord3): int =
 proc min*(a, b: Coord3): Coord3 =
   (min(a.x, b.x), min(a.y, b.y), min(a.z, b.z))
 
+proc max*(a, b: Coord3): Coord3 =
+  (max(a.x, b.x), max(a.y, b.y), max(a.z, b.z))
+
 iterator countup*(a, b: Coord3): Coord3 =
   for x in countup(a.x, b.x):
     for y in countup(a.y, b.y):
