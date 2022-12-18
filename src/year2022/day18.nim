@@ -25,8 +25,8 @@ proc part2*(input: string): int =
   var lo: Coord3 = (int.high, int.high, int.high)
   var hi: Coord3 = (int.low, int.low, int.low)
   for c in lava:
-    lo = min(lo, c)
-    hi = max(hi, c)
+    lo = min(lo, c - (1, 1, 1))
+    hi = max(hi, c + (1, 1, 1))
 
   proc neighbors(pos: Coord3): iterator: Coord3 =
     return iterator(): Coord3 =
