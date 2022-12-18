@@ -30,7 +30,7 @@ proc part2*(input: string): int =
 
   proc neighbors(pos: Coord3): iterator: Coord3 =
     return iterator(): Coord3 =
-      for p in p.adj:
+      for p in pos.adj:
         if p.x in lo.x..hi.x and p.y in lo.y..hi.y and p.z in lo.z..hi.z and p notin lava:
           yield p
 
