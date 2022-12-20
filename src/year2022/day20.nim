@@ -3,9 +3,6 @@ import sequtils
 import strutils
 import sugar
 
-proc nums(input: string, scale = 1): seq[int] =
-  input.splitLines.mapIt(it.parseInt * scale)
-
 proc mix(input: string, scale = 1, times = 1): int =
   var ns = input.splitLines.mapIt(it.parseInt * scale)
   var locs = collect(for i in ns.low..ns.high: i)
