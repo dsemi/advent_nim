@@ -2,7 +2,6 @@ import re
 import sequtils
 import tables
 import strutils
-import zero_functional
 
 const smallK = """
  ##  ###   ##  #### ####  ##  #  # ###   ## #  # #     ##  ###  ###   ### #  # #   # ####
@@ -42,9 +41,13 @@ proc separateLetters(input: string, fill = '#'): seq[string] =
   let input = input.strip(chars = Newlines)
   let subs = [(re($fill), "#"), (re"[^\n]", " ")]
   let lns = input.splitLines
+  proc anyFill(col: int): bool =
+    for i in lns.low .. lns.high:
+      if lns[i][col] == fill:
+        return true
   var prevCol = 0
   for col in lns[0].low .. lns[0].len:
-    if col != lns[0].len and ((lns.low .. lns.high) --> exists(lns[it][col] == fill)):
+    if col != lns[0].len and anyFill(col):
       continue
     var rows = newSeq[string]()
     for row in lns:

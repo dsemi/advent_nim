@@ -2,14 +2,17 @@ import math
 import sequtils
 import strutils
 import sugar
-import zero_functional
 
 proc part1*(input: string): string =
   var ns = input.mapIt(($it).parseInt)
   for _ in 1..100:
     for (n, x) in ns.mpairs:
-      let pos = countup(n, ns.len-1, (n+1)*4) --> map(ns[it ..< min(ns.len, it + n + 1)].sum) --> sum()
-      let neg = countup(n+(n+1)*2, ns.len-1, (n+1)*4) --> map(ns[it ..< min(ns.len, it + n + 1)].sum) --> sum()
+      var pos = 0
+      for i in countup(n, ns.len-1, (n+1)*4):
+        pos += ns[i ..< min(ns.len, i + n + 1)].sum
+      var neg = 0
+      for i in countup(n+(n+1)*2, ns.len-1, (n+1)*4):
+        neg += ns[i ..< min(ns.len, i + n + 1)].sum
       x = abs(pos - neg) mod 10
   ns[0..7].mapIt($it).join
 

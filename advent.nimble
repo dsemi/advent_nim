@@ -10,7 +10,6 @@ requires "nim >= 1.6.6"
 requires "nimsimd >= 1.2.2"
 requires "itertools >= 0.4.0"
 requires "parsetoml >= 0.6.0"
-requires "zerofunctional >= 1.2.1"
 
 task test, "Runs the test suite":
   for i in 0..paramCount():

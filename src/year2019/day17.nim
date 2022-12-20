@@ -1,5 +1,4 @@
 import fusion/matching
-import itertools
 import sequtils
 import strutils
 import sugar
@@ -60,8 +59,9 @@ proc findPath(grid: seq[seq[char]]): seq[string] =
       result.add(go(p, d))
     result.add(keepMoving("L", (y, -x)))
     result.add(keepMoving("R", (-y, x)))
-  for ch in chunked(go(sPos, dir[sDir]), 2):
-    result.add(ch.join(","))
+  let flatPath = go(sPos, dir[sDir])
+  for i in countup(flatPath.low, flatPath.high, 2):
+    result.add($flatPath[i] & "," & $flatPath[i+1])
 
 proc split(x: seq[string], s: seq[string]): seq[seq[string]] =
   var i, c: int
