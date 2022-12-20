@@ -1,4 +1,9 @@
 nimcache/
 nimblecache/
 htmldocs/
+
+# Binary
 main
+
+# Flags used in most recent build
+build_flags
