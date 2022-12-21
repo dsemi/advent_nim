@@ -353,7 +353,6 @@ proc `|+|`*(a, b: int): int =
   else:
     result = high(typeof(result))
 
-
 type EKind* = enum
   EL, ER
 

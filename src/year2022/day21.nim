@@ -1,72 +1,46 @@
-import fusion/matching
+import complex
 import strutils
-import sugar
 import tables
 
-import "../utils"
-
-{.experimental: "caseStmtMacros".}
-
 type
-  MKind = enum Atom, Comp
   Op = enum Add, Sub, Mul, Div
+  MKind = enum Num, Math
   Monkey = ref object
     case kind: MKind
-    of Atom: val: int
-    of Comp:
-      left, right: string
+    of Num: v: Complex64
+    of Math:
+      l, r: string
       op: Op
-  Node = Either[(int) -> int, int]
 
-proc eval(op: Op, left, right: int): int =
-  case op
-  of Add: left + right
-  of Sub: left - right
-  of Mul: left * right
-  of Div: left div right
-
-proc monkeys(input: string): Table[string, Monkey] =
+proc monkeys(input: string): TableRef[string, Monkey] =
+  result = newTable[string, Monkey]()
   for line in input.splitLines:
-    case line.splitWhitespace:
-      of [@k, @n]: result[k[0..^2]] = Monkey(kind: Atom, val: n.parseInt)
-      of [@k, @left, @op, @right]:
-        result[k[0..^2]] = Monkey(kind: Comp, left: left, right: right, op: Op("+-*/".find(op[0])))
+    let pts = line.splitWhitespace
+    result[pts[0][0..^2]] =
+      if pts.len == 2: Monkey(kind: Num, v: complex64(pts[1].parseInt.float64, 0))
+      else: Monkey(kind: Math, l: pts[1], op: Op("+-*/".find(pts[2][0])), r: pts[3])
+
+proc eval(ms: TableRef[string, Monkey], k: string, p2: bool): Complex64 =
+  if p2 and k == "humn":
+    return im(1'f64)
+  let m = ms[k]
+  case m.kind
+  of Num: m.v
+  of Math:
+    case m.op
+    of Add: eval(ms, m.l, p2) + eval(ms, m.r, p2)
+    of Sub: eval(ms, m.l, p2) - eval(ms, m.r, p2)
+    of Mul: eval(ms, m.l, p2) * eval(ms, m.r, p2)
+    of Div: eval(ms, m.l, p2) / eval(ms, m.r, p2)
 
 proc part1*(input: string): int =
-  let ms = input.monkeys
-  proc val(k: string): int =
-    let m = ms[k]
-    case m.kind
-    of Atom: m.val
-    of Comp: eval(m.op, m.left.val, m.right.val)
-  val("root")
+  input.monkeys.eval("root", false).re.int
 
 proc part2*(input: string): int =
   let ms = input.monkeys
-  proc val(k: string): Node =
-    if k == "humn":
-      return Node(kind: EL, l: (x: int) => x)
-    let m = ms[k]
-    case m.kind
-    of Atom: Node(kind: ER, r: m.val)
-    of Comp:
-      let left = m.left.val
-      let right = m.right.val
-      if left.kind == EL:
-        case m.op
-        of Add: Node(kind: EL, l: (n: int) => left.l(n - right.r))
-        of Sub: Node(kind: EL, l: (n: int) => left.l(n + right.r))
-        of Mul: Node(kind: EL, l: (n: int) => left.l(n div right.r))
-        of Div: Node(kind: EL, l: (n: int) => left.l(n * right.r))
-      elif right.kind == EL:
-        case m.op
-        of Add: Node(kind: EL, l: (n: int) => right.l(n - left.r))
-        of Sub: Node(kind: EL, l: (n: int) => right.l(left.r - n))
-        of Mul: Node(kind: EL, l: (n: int) => right.l(n div left.r))
-        of Div: Node(kind: EL, l: (n: int) => right.l(left.r div n))
-      else: Node(kind: ER, r: eval(m.op, left.r, right.r))
   let root = ms["root"]
-  let lv = val(root.left)
-  let rv = val(root.right)
-  if lv.kind == EL: lv.l(rv.r)
-  else: rv.l(lv.r)
+  let l = ms.eval(root.l, true)
+  let r = ms.eval(root.r, true)
+  # We know the equation is linear
+  int(if l.im != 0: (r.re - l.re) / l.im
+      else: (l.re - r.re) / r.im)
