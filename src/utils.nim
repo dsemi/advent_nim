@@ -352,3 +352,12 @@ proc `|+|`*(a, b: int): int =
     result = low(typeof(result))
   else:
     result = high(typeof(result))
+
+
+type EKind* = enum
+  EL, ER
+
+type Either*[L, R] = object
+  case kind*: EKind
+  of EL: l*: L
+  of ER: r*: R
