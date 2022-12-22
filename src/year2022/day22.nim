@@ -1,4 +1,5 @@
 import re
+import sequtils
 import strutils
 import tables
 
@@ -6,15 +7,10 @@ import "../utils"
 
 proc walk(input: string, portals: Table[(Coord, Coord), (Coord, Coord)]): int =
   let pts = input.split("\n\n")
-  let instrs = pts[1]
-  var grid = newSeq[seq[char]]()
-  for line in pts[0].splitLines:
-    grid.add newSeq[char]()
-    for c in line:
-      grid[^1].add c
+  let grid = pts[0].splitLines.mapIt(it.toSeq)
   var pos: Coord = (0, grid[0].find('.'))
   var dir: Coord = (0, 1)
-  for instr in instrs.findAll(re"\d+|."):
+  for instr in pts[1].findAll(re"\d+|."):
     if instr == "L":
       dir *= (0, 1)
     elif instr == "R":
