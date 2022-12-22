@@ -1,7 +1,6 @@
 import md5
 import strutils
 import threadpool
-{.experimental: "parallel".}
 
 const
   largeBatchSize = 8
@@ -19,9 +18,8 @@ proc part1*(input: string): string =
     j = 0
   for sz in countup(0, int.high, largeBatchSize * batchSize):
     var arr = newSeq[FlowVar[seq[uint8]]](largeBatchSize)
-    parallel:
-      for i in 0 .. arr.high:
-        arr[i] = spawn helper(input, sz + i * batchSize)
+    for i in 0 .. arr.high:
+      arr[i] = spawn helper(input, sz + i * batchSize)
     for grp in arr:
       for x in ^grp:
         res[j] = toHex(x, 1).toLowerAscii
@@ -41,9 +39,8 @@ proc part2*(input: string): string =
     j = 0
   for sz in countup(0, int.high, largeBatchSize * batchSize):
     var arr = newSeq[FlowVar[seq[(uint8, uint8)]]](largeBatchSize)
-    parallel:
-      for i in 0 .. arr.high:
-        arr[i] = spawn helper2(input, sz + i * batchSize)
+    for i in 0 .. arr.high:
+      arr[i] = spawn helper2(input, sz + i * batchSize)
     for grp in arr:
       for (n, c) in ^grp:
         if res[n] == "":

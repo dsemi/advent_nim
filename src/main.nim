@@ -67,8 +67,8 @@ if commandLineParams()[0] == "test":
       var days = probs[y].keys.toSeq
       days.sort
       for d in days:
-        let f = probs[y][d]
         test $d:
+          let f = probs[y][d]
           let input = getInput(y, d)
 
           var expected = expectedAnswers[$y][$d]["part1"].getStr
