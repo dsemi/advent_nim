@@ -22,7 +22,7 @@ proc turn(grid: Table[Coord, char], dir: Coord, pos: Coord): Coord =
 
 proc followPath(grid: Table[Coord, char]): seq[char] =
   var coord = toSeq(grid.keys).min
-  var dir = (1, 0)
+  var dir: Coord = (1, 0)
   while coord in grid:
     result.add(grid[coord])
     if grid[coord] == '+':

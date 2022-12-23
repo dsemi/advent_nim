@@ -18,62 +18,66 @@ proc `%=`*(a: var SomeInteger, b: SomeInteger) =
   a = floorMod(a, b)
 
 # Coordinates
-type Coord* = tuple
-  x: int
-  y: int
+type Coordi[T] = tuple
+  x: T
+  y: T
 
-proc `+`*(p1: Coord, p2: Coord): Coord =
+type Coord* = Coordi[int]
+
+type Coord16* = Coordi[int16]
+
+proc `+`*[T](p1: Coordi[T], p2: Coordi[T]): Coordi[T] =
   (p1.x + p2.x, p1.y + p2.y)
 
-proc `+=`*(p1: var Coord, p2: Coord) =
+proc `+=`*[T](p1: var Coordi[T], p2: Coordi[T]) =
   p1.x += p2.x
   p1.y += p2.y
 
-proc `-`*(p1: Coord, p2: Coord): Coord =
+proc `-`*[T](p1: Coordi[T], p2: Coordi[T]): Coordi[T] =
   (p1.x - p2.x, p1.y - p2.y)
 
-proc `*`*(n: int, p: Coord): Coord =
+proc `*`*[T](n: int, p: Coordi[T]): Coordi[T] =
   (p.x * n, p.y * n)
 
-proc `*`*(p1: Coord, p2: Coord): Coord =
+proc `*`*[T](p1: Coordi[T], p2: Coordi[T]): Coordi[T] =
   (p1.x * p2.x - p1.y * p2.y, p1.x * p2.y + p1.y * p2.x)
 
-proc `*=`*(p1: var Coord, p2: Coord) =
+proc `*=`*[T](p1: var Coordi[T], p2: Coordi[T]) =
   p1 = p1 * p2
 
-proc abs*(p: Coord): Coord =
+proc abs*[T](p: Coordi[T]): Coordi[T] =
   (p.x.abs, p.y.abs)
 
-proc sum*(p: Coord): int =
+proc sum*[T](p: Coordi[T]): T =
   p.x + p.y
 
-proc prod*(p: Coord): int =
+proc prod*[T](p: Coordi[T]): T =
   p.x * p.y
 
-proc sgn*(p: Coord): Coord =
+proc sgn*[T](p: Coordi[T]): Coord =
   (p.x.sgn, p.y.sgn)
 
-proc scale*(p: Coord, n: int): Coord =
+proc scale*[T](p: Coordi[T], n: T): Coordi[T] =
   (n * p.x, n * p.y)
 
-proc min*(a, b: Coord): Coord =
+proc min*[T](a, b: Coordi[T]): Coordi[T] =
   (min(a.x, b.x), min(a.y, b.y))
 
-proc max*(a, b: Coord): Coord =
+proc max*[T](a, b: Coordi[T]): Coordi[T] =
   (max(a.x, b.x), max(a.y, b.y))
 
-iterator countup*(a, b: Coord): Coord =
+iterator countup*[T](a, b: Coordi[T]): Coordi[T] =
   for x in countup(a.x, b.x):
     for y in countup(a.y, b.y):
       yield (x, y)
 
-proc `[]`*[T](grid: openArray[seq[T]], c: Coord): T {.inline.} =
+proc `[]`*[T, S](grid: openArray[seq[T]], c: Coordi[S]): T {.inline.} =
   grid[c.x][c.y]
 
-proc `[]`*[T](grid: var openArray[seq[T]], c: Coord): var T {.inline.} =
+proc `[]`*[T, S](grid: var openArray[seq[T]], c: Coordi[S]): var T {.inline.} =
   grid[c.x][c.y]
 
-proc `[]=`*[T](grid: var openArray[seq[T]], c: Coord, v: T) {.inline.} =
+proc `[]=`*[T, S](grid: var openArray[seq[T]], c: Coordi[S], v: T) {.inline.} =
   grid[c.x][c.y] = v
 
 type Coord3* = tuple

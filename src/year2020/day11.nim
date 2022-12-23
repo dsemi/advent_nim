@@ -11,7 +11,7 @@ proc stabilize(input: string, p2: bool = false): int =
     for c, v in row:
       if v != 'L':
         continue
-      var coord = (r, c)
+      var coord: Coord = (r, c)
       var neighbs = newSeq[Coord]()
       for dr in [-1, 0, 1]:
         for dc in [-1, 0, 1]:
