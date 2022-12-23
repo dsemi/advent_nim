@@ -2,13 +2,10 @@ import sequtils
 import sets
 import std/enumerate
 import strutils
+import sugar
 import tables
 
 import "../utils"
-
-proc adj(elves: HashSet[Coord], pt: Coord): seq[bool] =
-  for d in [(-1, 1), (0, 1), (1, 1), (-1, 0), (1, 0), (-1, -1), (0, -1), (1, -1)]:
-    result.add pt + d notin elves
 
 iterator steps(input: string): HashSet[Coord] =
   var elves = initHashSet[Coord]()
@@ -20,7 +17,9 @@ iterator steps(input: string): HashSet[Coord] =
   for _ in 1..int.high:
     var props = initTable[Coord, seq[Coord]]()
     for elf in elves:
-      let adjs = elves.adj(elf)
+      let adjs = collect:
+        for d in [(-1, 1), (0, 1), (1, 1), (-1, 0), (1, 0), (-1, -1), (0, -1), (1, -1)]:
+          elf + d notin elves
       if adjs.anyIt(not it):
         let poss = [(adjs[0] and adjs[1] and adjs[2], (elf.x, elf.y+1)),
                     (adjs[5] and adjs[6] and adjs[7], (elf.x, elf.y-1)),
