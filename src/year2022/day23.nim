@@ -40,7 +40,7 @@ iterator steps(input: string): HashSet[Coord16] =
       if elf2 in elves:
         elves.excl elf2
         elves.incl elf
-        elves.incl (elf2 - elf).scale(2) + elf
+        elves.incl elf2.scale(2) - elf
       else:
         elves.incl elf2
     yield elves
