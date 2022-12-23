@@ -47,11 +47,20 @@ proc abs*(p: Coord): Coord =
 proc sum*(p: Coord): int =
   p.x + p.y
 
+proc prod*(p: Coord): int =
+  p.x * p.y
+
 proc sgn*(p: Coord): Coord =
   (p.x.sgn, p.y.sgn)
 
 proc scale*(p: Coord, n: int): Coord =
   (n * p.x, n * p.y)
+
+proc min*(a, b: Coord): Coord =
+  (min(a.x, b.x), min(a.y, b.y))
+
+proc max*(a, b: Coord): Coord =
+  (max(a.x, b.x), max(a.y, b.y))
 
 iterator countup*(a, b: Coord): Coord =
   for x in countup(a.x, b.x):
