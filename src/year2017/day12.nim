@@ -13,9 +13,14 @@ proc parsePipes(input: string): Table[int, seq[int]] =
     [@a, @b] := line.split(" <-> ")
     result[a.parseInt] = b.split(", ").map(parseInt)
 
+proc neighbs(m: Table[int, seq[int]]): proc(n: int): iterator: int =
+  return proc(n: int): iterator: int =
+           return iterator(): int =
+             for x in m[n]: yield x
+
 proc part1*(input: string): int =
   let m = input.parsePipes
-  for (d, v) in bfs(0, (n) => m[n].seqToIter):
+  for (d, v) in bfs(0, neighbs(m)):
     inc result
 
 proc part2*(input: string): int =
@@ -24,4 +29,4 @@ proc part2*(input: string): int =
   for n in m.keys:
     if n notin seen:
       inc result
-      seen.incl(toSeq(bfs(n, (n) => m[n].seqToIter)).mapIt(it[1]).toIntSet)
+      seen.incl(toSeq(bfs(n, neighbs(m))).mapIt(it[1]).toIntSet)

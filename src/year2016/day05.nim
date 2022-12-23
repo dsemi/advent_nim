@@ -22,7 +22,7 @@ proc part1*(input: string): string =
       arr[i] = spawn helper(input, sz + i * batchSize)
     for grp in arr:
       for x in ^grp:
-        res[j] = toHex(x, 1).toLowerAscii
+        res[j] = toHex(x.uint, 1).toLowerAscii
         inc j
         if j == 8:
           return res.join
@@ -44,7 +44,7 @@ proc part2*(input: string): string =
     for grp in arr:
       for (n, c) in ^grp:
         if res[n] == "":
-          res[n] = toHex(c, 1).toLowerAscii
+          res[n] = toHex(c.uint, 1).toLowerAscii
           inc j
           if j == 8:
             return res.join

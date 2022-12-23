@@ -7,7 +7,9 @@ proc md5sum(data: openArray[char], output: ptr char, stretch: csize_t) {.importc
 const batchSize = 1000
 
 proc hashNum(seed: string, n: int, num: int): array[32, char] =
-  md5sum(seed & $n, addr result[0], uint(num))
+  var v: array[32, char]
+  md5sum(seed & $n, addr v[0], uint(num))
+  v
 
 proc idx(c: char): int =
   if c in '0'..'9':

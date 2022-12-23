@@ -1,10 +1,8 @@
 import algorithm
-import deques
 import fusion/matching
 import hashes
 import math
 import re
-import sets
 import sequtils
 import strutils
 import tables
@@ -60,7 +58,6 @@ iterator allMoves(elev: int, elev2: int, fls: seq[Pair]): seq[Pair] =
 
 proc neighbors(floors: Floors): iterator: Floors =
   return iterator(): Floors =
-    var neighbs: HashSet[Floors]
     let
       elev = floors.elev
       flrs = floors.flrs
@@ -68,16 +65,10 @@ proc neighbors(floors: Floors): iterator: Floors =
       if e > 0 and e <= 4:
         for flrs2 in allMoves(elev, e, flrs):
           if flrs2.isValid:
-            let neighb = Floors(elev: e, flrs: flrs2.sorted)
-            if neighb notin neighbs:
-              neighbs.incl(neighb)
-              yield neighb
+            yield Floors(elev: e, flrs: flrs2.sorted)
           for flrs3 in allMoves(elev, e, flrs2):
             if flrs3.isValid:
-              let neighb = Floors(elev: e, flrs: flrs3.sorted)
-              if neighb notin neighbs:
-                neighbs.incl(neighb)
-                yield neighb
+              yield Floors(elev: e, flrs: flrs3.sorted)
 
 proc part1*(input: string): int =
   for (d, st) in bfs(input.parseFloors, neighbors):

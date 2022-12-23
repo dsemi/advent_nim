@@ -48,7 +48,7 @@ proc submitAnswer*(year, day, part: int, ans: string) =
   let resp = client.postContent(url, data.encodeQuery)
   try:
     echo resp.parseHtml.child("html").child("body").child("main").child("article").child("p").innerText
-  except:
+  except CatchableError:
     echo "Error getting relevant piece of html, outputting full response"
     echo resp
 
@@ -65,22 +65,29 @@ macro genProblems(s: untyped): untyped =
   result = newNimNode(nnkStmtList)
   var tbl = newNimNode(nnkTableConstr)
   for _, dir in walkDir("src"):
-    if dir.rsplit('/', 1)[1].startswith("year"):
+    if dir.rsplit('/', 1)[1].startsWith("year"):
       var year = newNimNode(nnkTableConstr)
       let y = dir[8 .. ^1].parseInt
       for _, f in walkDir(dir, relative=true):
-        if f.startswith("day"):
+        if f.startsWith("day"):
           let dir = dir[4 .. ^1]
           let module = fmt"{dir}/{f[0 ..< ^4]}"
           let alias = module.replace("/", "")
-          result.add(newNimNode(nnkImportStmt).add(infix(ident(module), "as", ident(alias))))
+          let moduleI = ident(module)
+          let aliasI = ident(alias)
+          result.add quote do:
+            import `moduleI` as `aliasI`
           let d = f[3 .. 4].parseInt
-          let tup = newNimNode(nnkTupleConstr).add(
-            newCall("wrap", newDotExpr(ident(fmt"year{y}day{d:02}"), ident("part1"))),
-            newCall("wrap", newDotExpr(ident(fmt"year{y}day{d:02}"), ident("part2"))))
+          let idP = ident(fmt"year{y}day{d:02}")
+          let idP1 = ident("part1")
+          let idP2 = ident("part2")
+          let tup = quote do:
+            (wrap(`idP`.`idP1`), wrap(`idP`.`idP2`))
           year.add(newColonExpr(newLit(d), tup))
       tbl.add(newColonExpr(newLit(y), newCall("toTable", year)))
-  result.add(newLetStmt(postfix(ident("probs"), "*"), newCall("toTable", tbl)))
+  let pbs = ident("probs")
+  result.add quote do:
+    let `pbs`* = `tbl`.toTable
 
 # No idea why this works only when a string is provided
 # I think something to do with getting the context from where the macro is run

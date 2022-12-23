@@ -8,7 +8,6 @@ import "../utils"
 iterator paths(input: string): int =
   let ui = uniqueIdx()
   var adj: seq[seq[int]]
-  var cnt: int
   let lines = input.splitlines.len
   for l in 1 .. int.high:
     if l * (l + 1) div 2 == lines:

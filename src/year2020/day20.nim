@@ -30,9 +30,6 @@ iterator orientations(tile: Grid): Grid =
     yield t
     t.reverse
 
-proc hashSide(arr: seq[bool]): uint16 =
-  arr.foldl(a shl 1 or b.uint16, 0u16)
-
 proc findCorners(tiles: seq[Tile]): (seq[int], Table[seq[bool], seq[Tile]]) =
   for tile in tiles:
     for t in orientations(tile.grid):
