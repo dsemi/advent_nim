@@ -1,64 +1,70 @@
 import sequtils
-import sets
 import std/enumerate
 import strutils
-import sugar
 
 import "../utils"
 
-const dirs = [(-1'i16, 1'i16), (0'i16, 1'i16), (1'i16, 1'i16),
-              (-1'i16, 0'i16), (1'i16, 0'i16),
-              (-1'i16, -1'i16), (0'i16, -1'i16), (1'i16, -1'i16)]
+const sz = 2500
 
-proc move(elves: HashSet[Coord16], elf: Coord16, dir: int): Coord16 =
-  let adjs = collect:
-    for d in dirs:
-      elf + d notin elves
-  if adjs.anyIt(not it):
-    let poss = [(adjs[0] and adjs[1] and adjs[2], (elf.x, elf.y+1)),
-                (adjs[5] and adjs[6] and adjs[7], (elf.x, elf.y-1)),
-                (adjs[0] and adjs[3] and adjs[5], (elf.x-1, elf.y)),
-                (adjs[2] and adjs[4] and adjs[7], (elf.x+1, elf.y))]
-    for i in 0..3:
-      let (avail, elf2) = poss[(dir+i) mod 4]
-      if avail:
-        return elf2
-  elf
+const dirs = [-sz - 1, -sz, -sz + 1, -1, 1, sz - 1, sz, sz + 1]
 
-iterator steps(input: string): HashSet[Coord16] =
-  var elves = initHashSet[Coord16]()
-  for r, line in enumerate(input.splitLines):
-    for c, v in line:
+const propDirs = [
+  [-sz - 1, -sz, -sz + 1],
+  [sz - 1,   sz,  sz + 1],
+  [-sz - 1, -1,  sz - 1],
+  [-sz + 1, 1,  sz + 1],
+]
+
+type Elf = ref object
+  pos, prop: int
+
+proc parse(input: string): seq[Elf] =
+  for y, line in enumerate(input.splitLines):
+    for x, v in line:
       if v == '#':
-        elves.incl (c.int16, -r.int16)
-  var dir = 0
-  for _ in 1..int.high:
-    var elves2 = elves
-    elves.clear
-    for elf in elves2:
-      let elf2 = move(elves2, elf, dir)
-      if elf2 in elves:
-        elves.excl elf2
-        elves.incl elf
-        elves.incl elf2.scale(2) - elf
-      else:
-        elves.incl elf2
-    yield elves
-    dir = (dir+1) mod 4
+        result.add Elf(pos: (y + sz div 2)*sz + x + sz div 2, prop: int.low)
+
+iterator steps(elves: var seq[Elf]): bool =
+  var grid = newSeq[Elf](sz*sz)
+  var props = newSeq[int](sz*sz)
+  for elf in elves:
+    grid[elf.pos] = elf
+  for dir in 0..int.high:
+    for elf in elves:
+      if dirs.anyIt(grid[elf.pos + it] != nil):
+        for i in 0..3:
+          let prop = propDirs[(dir+i) mod 4]
+          if grid[elf.pos + prop[0]] == nil and
+             grid[elf.pos + prop[1]] == nil and
+             grid[elf.pos + prop[2]] == nil:
+            elf.prop = elf.pos + prop[1]
+            props[elf.prop] += 1
+            break
+    var moved = false
+    for elf in elves:
+      if elf.prop != int.low:
+        if props[elf.prop] == 1:
+          moved = true
+          grid[elf.pos] = nil
+          grid[elf.prop] = elf
+          elf.pos = elf.prop
+        props[elf.prop] = 0
+        elf.prop = int.low
+    yield moved
 
 proc part1*(input: string): int =
-  for d, elves in enumerate(1, input.steps):
+  var elves = input.parse
+  for d, _ in enumerate(1, elves.steps):
     if d == 10:
-      var minC = (int16.high, int16.high)
-      var maxC = (int16.low, int16.low)
+      var minC = (int.high, int.high)
+      var maxC = (int.low, int.low)
       for elf in elves:
-        minC = min(minC, elf)
-        maxC = max(maxC, elf + (1'i16, 1'i16))
+        minC = min(minC, (elf.pos mod sz, elf.pos div sz))
+        maxC = max(maxC, (elf.pos mod sz + 1, elf.pos div sz + 1))
       return prod(maxC - minC) - elves.len
 
 proc part2*(input: string): int =
-  var prev: HashSet[Coord16]
-  for d, elves in enumerate(1, input.steps):
-    if prev == elves:
+  var elves = input.parse
+  for d, b in enumerate(1, elves.steps):
+    if not b:
       return d
-    prev = elves
