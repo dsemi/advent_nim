@@ -4,7 +4,7 @@ import strutils
 
 type Valley = ref object
   w, h: int
-  nBlizz, sBlizz, eBlizz, wBlizz: seq[uint64]
+  nBlizz, sBlizz, wBlizz, eBlizz: seq[uint64]
   walls: seq[uint64]
 
 proc parse(input: string): Valley =
@@ -14,8 +14,8 @@ proc parse(input: string): Valley =
   var v = Valley(w: w, h: h)
   v.nBlizz = newSeq[uint64](w)
   v.sBlizz = newSeq[uint64](w)
-  v.eBlizz = newSeq[uint64](w)
   v.wBlizz = newSeq[uint64](w)
+  v.eBlizz = newSeq[uint64](w)
   v.walls = newSeq[uint64](w)
   for r, row in grid:
     for c, val in row:
@@ -33,8 +33,8 @@ proc shortestPath(v: var Valley, start, goal: (int, int)): int =
   frontier[start[1]].setBit(start[0])
   while not frontier[goal[1]].testBit(goal[0]):
     inc result
-    var peBlizz = v.eBlizz
     var pwBlizz = v.wBlizz
+    var peBlizz = v.eBlizz
     var pFrontier = frontier
     for c in 0 ..< v.w:
       v.nBlizz[c] = clearMasked((v.nBlizz[c] shr 1) or ((v.nBlizz[c] and 2) shl (v.h - 3)), v.walls[c])
@@ -43,7 +43,7 @@ proc shortestPath(v: var Valley, start, goal: (int, int)): int =
       v.eBlizz[c] = peBlizz[((c - 4 + v.w) mod (v.w - 2)) + 1]
       frontier[c].setMask(bitor(pFrontier[c] shr 1, pFrontier[c] shl 1,
                                 pFrontier[(c + 1 + v.w) mod v.w], pFrontier[(c - 1 + v.w) mod v.w]))
-      frontier[c].clearMask(bitor(v.walls[c], v.eBlizz[c], v.wBlizz[c], v.nBlizz[c], v.sBlizz[c]))
+      frontier[c].clearMask(bitor(v.walls[c], v.nBlizz[c], v.sBlizz[c], v.eBlizz[c], v.wBlizz[c]))
 
 
 proc part1*(input: string): int =
