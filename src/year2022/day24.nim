@@ -43,7 +43,7 @@ proc shortestPath(v: var Valley, start, goal: (int, int)): int =
       v.eBlizz[c] = peBlizz[(c - 4 + v.w) mod (v.w - 2) + 1]
       frontier[c].setMask(bitor(pFrontier[c] shr 1, pFrontier[c] shl 1,
                                 pFrontier[(c + 1 + v.w) mod v.w], pFrontier[(c - 1 + v.w) mod v.w]))
-      frontier[c].clearMask(bitor(v.walls[c], v.nBlizz[c], v.sBlizz[c], v.eBlizz[c], v.wBlizz[c]))
+      frontier[c].clearMask(bitor(v.walls[c], v.nBlizz[c], v.sBlizz[c], v.wBlizz[c], v.eBlizz[c]))
 
 
 proc part1*(input: string): int =
