@@ -1,63 +1,58 @@
-import math
+import bitops
 import sequtils
-import sets
 import strutils
-
-import "../utils"
 
 type Valley = ref object
   w, h: int
-  blizz: seq[(Coord, Coord)]
-  walls: HashSet[Coord]
+  nBlizz, sBlizz, eBlizz, wBlizz: seq[uint64]
+  walls: seq[uint64]
 
-proc parse(input: string): (Coord, Coord, Valley) =
+proc parse(input: string): Valley =
   let grid = input.splitLines.mapIt(it.toSeq)
-  let h = grid.len - 2
-  let w = grid[0].len - 2
-  let start: Coord = (0, 1)
-  let goal: Coord = (grid.high, grid[0].high-1)
-  var blizz = newSeq[(Coord, Coord)]()
-  var walls = initHashSet[Coord]()
-  walls.incl (start.x-1, start.y)
-  walls.incl (goal.x+1, goal.y)
+  let h = grid.len
+  let w = grid[0].len
+  var v = Valley(w: w, h: h)
+  v.nBlizz = newSeq[uint64](w)
+  v.sBlizz = newSeq[uint64](w)
+  v.eBlizz = newSeq[uint64](w)
+  v.wBlizz = newSeq[uint64](w)
+  v.walls = newSeq[uint64](w)
   for r, row in grid:
-    for c, v in row:
-      case v
-      of '^': blizz.add ((r, c), (-1, 0))
-      of 'v': blizz.add ((r, c), (1, 0))
-      of '<': blizz.add ((r, c), (0, -1))
-      of '>': blizz.add ((r, c), (0, 1))
-      of '#': walls.incl (r, c)
+    for c, val in row:
+      case val
+      of '^': v.nBlizz[c].setBit(r)
+      of 'v': v.sBlizz[c].setBit(r)
+      of '<': v.wBlizz[c].setBit(r)
+      of '>': v.eBlizz[c].setBit(r)
+      of '#': v.walls[c].setBit(r)
       else: discard
-  (start, goal, Valley(w: w, h: h, blizz: blizz, walls: walls))
+  v
 
-proc shortestPath(v: var Valley, start, goal: Coord): int =
-  var edges = [start].toHashSet
-  while goal notin edges:
+proc shortestPath(v: var Valley, start, goal: (int, int)): int =
+  var frontier = newSeq[uint64](v.w)
+  frontier[start[1]].setBit(start[0])
+  while not frontier[goal[1]].testBit(goal[0]):
     inc result
-    var nextBlizz = newSeq[(Coord, Coord)]()
-    var blizzSet = initHashSet[Coord]()
-    for pos, d in v.blizz.items:
-      let pos2: Coord = (floorMod(pos.x+d.x-1, v.h)+1, floorMod(pos.y+d.y-1, v.w)+1)
-      nextBlizz.add (pos2, d)
-      blizzSet.incl pos2
-    v.blizz = nextBlizz
-    var nextEdges = initHashSet[Coord]()
-    for p in edges:
-      if p notin v.walls and p notin blizzSet:
-        nextEdges.incl p
-      for d in [(0, -1), (0, 1), (1, 0), (-1, 0)]:
-        let p2 = p + d
-        if p2 notin v.walls and p2 notin blizzSet:
-          nextEdges.incl p2
-    edges = nextEdges
+    var peBlizz = v.eBlizz
+    var pwBlizz = v.wBlizz
+    var pFrontier = frontier
+    for c in 0 ..< v.w:
+      v.nBlizz[c] = clearMasked((v.nBlizz[c] shr 1) or ((v.nBlizz[c] and 2) shl (v.h - 3)), v.walls[c])
+      v.sBlizz[c] = clearMasked((v.sBlizz[c] shl 1) or ((v.sBlizz[c] shr (v.h - 3)) and 2), v.walls[c])
+      v.wBlizz[c] = pwBlizz[((c - 2 + v.w) mod (v.w - 2)) + 1]
+      v.eBlizz[c] = peBlizz[((c - 4 + v.w) mod (v.w - 2)) + 1]
+      frontier[c].setMask(bitor(pFrontier[c] shr 1, pFrontier[c] shl 1,
+                                pFrontier[(c + 1 + v.w) mod v.w], pFrontier[(c - 1 + v.w) mod v.w]))
+      frontier[c].clearMask(bitor(v.walls[c], v.eBlizz[c], v.wBlizz[c], v.nBlizz[c], v.sBlizz[c]))
+
 
 proc part1*(input: string): int =
-  var (start, goal, valley) = input.parse
-  valley.shortestPath(start, goal)
+  var valley = input.parse
+  valley.shortestPath((0, 1), (valley.h-1, valley.w-2))
 
 proc part2*(input: string): int =
-  var (start, goal, valley) = input.parse
+  var valley = input.parse
+  let (start, goal) = ((0, 1), (valley.h-1, valley.w-2))
   result += valley.shortestPath(start, goal)
   result += valley.shortestPath(goal, start)
   result += valley.shortestPath(start, goal)
