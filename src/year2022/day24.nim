@@ -39,8 +39,8 @@ proc shortestPath(v: var Valley, start, goal: (int, int)): int =
     for c in 0 ..< v.w:
       v.nBlizz[c] = clearMasked((v.nBlizz[c] shr 1) or ((v.nBlizz[c] and 2) shl (v.h - 3)), v.walls[c])
       v.sBlizz[c] = clearMasked((v.sBlizz[c] shl 1) or ((v.sBlizz[c] shr (v.h - 3)) and 2), v.walls[c])
-      v.wBlizz[c] = pwBlizz[((c - 2 + v.w) mod (v.w - 2)) + 1]
-      v.eBlizz[c] = peBlizz[((c - 4 + v.w) mod (v.w - 2)) + 1]
+      v.wBlizz[c] = pwBlizz[(c - 2 + v.w) mod (v.w - 2) + 1]
+      v.eBlizz[c] = peBlizz[(c - 4 + v.w) mod (v.w - 2) + 1]
       frontier[c].setMask(bitor(pFrontier[c] shr 1, pFrontier[c] shl 1,
                                 pFrontier[(c + 1 + v.w) mod v.w], pFrontier[(c - 1 + v.w) mod v.w]))
       frontier[c].clearMask(bitor(v.walls[c], v.nBlizz[c], v.sBlizz[c], v.eBlizz[c], v.wBlizz[c]))
