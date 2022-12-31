@@ -1,8 +1,7 @@
 import "intcode"
 
 proc isPulled(prog: Program, x, y: int): bool =
-  var p: Program
-  deepCopy(p, prog)
+  var p = deepCopy(prog)
   p.send([x, y])
   p.run
   for o in p.recv:
@@ -19,12 +18,10 @@ proc part2*(input: string): int =
   var (x, y) = (0, 0)
   while true:
     var p: Program
-    deepCopy(p, prog)
-    if p.isPulled(x + 99, y):
+    if prog.isPulled(x + 99, y):
       break
     else:
-      deepCopy(p, prog)
-      if p.isPulled(x, y + 100):
+      if prog.isPulled(x, y + 100):
         inc y
       else:
         inc x

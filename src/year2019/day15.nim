@@ -26,9 +26,7 @@ iterator search(prog: Program): (int, bool, Program) =
           r = o
           inc j
         if r == 1 or r == 2:
-          var p2: Program
-          deepCopy(p2, p)
-          frontier.addLast((d+1, r == 2, st2, p2))
+          frontier.addLast((d+1, r == 2, st2, deepCopy(p)))
           p.send([if n == 4: 3 elif n == 3: 4 elif n == 2: 1 else: 2])
           p.run
           p.output[].clear()

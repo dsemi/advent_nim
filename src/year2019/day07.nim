@@ -5,9 +5,7 @@ import "intcode"
 proc chain(prog: Program, phases: seq[int], cycle: bool = false): seq[int] =
   var progs: seq[Program]
   for _ in phases:
-    var p: Program
-    deepCopy(p, prog)
-    progs.add(p)
+    progs.add deepCopy(prog)
   for i in progs.low..progs.high-1:
     progs[i+1].input = progs[i].output
   for i, p in phases:
