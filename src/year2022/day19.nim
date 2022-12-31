@@ -37,8 +37,8 @@ proc `[]`(m: M128i, i: int): int32 = cast[array[4, int32]](m)[i]
 
 proc sim(b: Blueprint, t: int): int32 =
   proc dfs(res: var int32, time: int, amts, bots: M128i, bans: uint8) =
-    let geodes = cast[array[4, int32]](amts)[0]
-    let geodeBots = cast[array[4, int32]](bots)[0]
+    let geodes = amts[0]
+    let geodeBots = bots[0]
     if time == 0:
       res = max(res, geodes)
       return
