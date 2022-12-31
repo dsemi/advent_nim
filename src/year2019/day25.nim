@@ -1,4 +1,4 @@
-import nre
+import re
 import sequtils
 import strutils
 
@@ -30,8 +30,8 @@ proc part1*(input: string): string =
   var s = ""
   for v in prog.recv:
     s &= v.chr
-  for m in s.findIter(re"\d+"):
-    result = m.match
+  for m in s.findAll(re"\d+"):
+    result = m
 
 proc part2*(input: string): string =
   " "
