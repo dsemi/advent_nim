@@ -373,3 +373,16 @@ type Either*[L, R] = object
   case kind*: EKind
   of EL: l*: L
   of ER: r*: R
+
+proc partitionPoint*[T](xs: openArray[T], pred: proc(x: T): bool): int =
+  var size = xs.len
+  var left = xs.low
+  var right = xs.high
+  while left < right:
+    let mid = left + size div 2
+    if pred(xs[mid]):
+      left = mid + 1
+    else:
+      right = mid
+    size = right - left
+  left
