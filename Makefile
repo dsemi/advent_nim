@@ -1,7 +1,7 @@
 SRC_FILES = $(shell find src/ -type f -name '*.nim')
 C_FILES = $(shell find src/ -type f -name '*.')
 
-BUILD_FLAGS = --threads:on -d:ssl
+BUILD_FLAGS = --threads:on -d:ssl --deepcopy:on
 
 debug: BUILD_FLAGS += -d:debug
 debug: main
