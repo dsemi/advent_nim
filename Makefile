@@ -1,5 +1,4 @@
 SRC_FILES = $(shell find src/ -type f -name '*.nim')
-C_FILES = $(shell find src/ -type f -name '*.')
 
 BUILD_FLAGS = --threads:on -d:ssl --deepcopy:on
 
@@ -12,7 +11,7 @@ release: main
 danger: BUILD_FLAGS += -d:danger
 danger: main
 
-main: Makefile advent.nimble $(SRC_FILES) $(C_FILES) build_flags
+main: Makefile advent.nimble $(SRC_FILES) build_flags
 	@nimble $(BUILD_FLAGS) build
 
 .PHONY: force
