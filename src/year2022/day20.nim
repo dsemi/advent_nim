@@ -3,8 +3,6 @@ import sequtils
 import strutils
 import sugar
 
-const SkipSize = 25
-
 type Node = ref object
   val: int
   prev {.cursor.}: Node
@@ -14,6 +12,7 @@ type Node = ref object
 
 proc mix(input: string, scale = 1, times = 1): int =
   let ns = input.splitLines.mapIt(Node(val: it.parseInt * scale))
+  let SkipSize = int(sqrt(float64(ns.len div 2))) div 2
   let m = ns.len - 1
   for i in ns.low .. ns.high:
     ns[(i+1) mod ns.len].prev = ns[i]
@@ -42,7 +41,7 @@ proc mix(input: string, scale = 1, times = 1): int =
                               ((x: Node) => x.farPrev, (x: Node) => x.prev)
                             else:
                               ((x: Node) => x.farNext, (x: Node) => x.next)
-      while toMove > 0 and toMove >= SkipSize:
+      while toMove >= SkipSize:
         toMove -= SkipSize
         b = farStep(b)
       for _ in 1..toMove:
