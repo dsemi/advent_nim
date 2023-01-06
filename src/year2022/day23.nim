@@ -4,7 +4,7 @@ import strutils
 
 import "../utils"
 
-const sz = 2500
+const sz = 300
 
 const dirs = [-sz - 1, -sz, -sz + 1, -1, 1, sz - 1, sz, sz + 1]
 
@@ -52,6 +52,7 @@ iterator steps(elves: var seq[Elf]): bool =
         elf.prop = int.low
     yield moved
 
+# 150x150, can use rows of array[3, uint64]
 proc part1*(input: string): int =
   var elves = input.parse
   for d, _ in enumerate(1, elves.steps):
