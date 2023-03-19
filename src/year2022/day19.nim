@@ -42,7 +42,15 @@ proc sim(b: Blueprint, t: int): int32 =
     if time == 0:
       res = max(res, geodes)
       return
-    let upperBd = geodes + time*geodeBots + time*(time + 1) div 2
+    var upperBd = geodes + time*geodeBots
+    var (obs, obsRate, obsCost) = (amts[1], bots[1], b.costs[0][1])
+    for t in countdown(time-1, 0):
+      if obs >= obsCost:
+        obs += obsRate - obsCost
+        upperBd += t
+      else:
+        obs += obsRate
+        obsRate += 1
     if upperBd <= res:
       return
     var bans = bans
