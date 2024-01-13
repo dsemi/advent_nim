@@ -1,68 +1,108 @@
-import nimsimd/sse41
 import sequtils
 import strscans
 import strutils
 
-when defined(gcc) or defined(clang):
-  {.localPassc: "-msse4.1".}
-
 const tmpl = "Blueprint $i: Each ore robot costs $i ore. Each clay robot costs $i ore. Each obsidian robot costs $i ore and $i clay. Each geode robot costs $i ore and $i obsidian."
 
-type Blueprint = ref object
-  num: int
-  # 0 = geode, 1 = obsidian, 2 = clay , 3 = ore
-  costs: array[4, M128i]
-  maxCosts: M128i
+type
+  Res = object
+    ore: uint16
+    clay: uint16
+    obs: uint16
+    geode: uint16
+
+  Blueprint = ref object
+    num: int
+    oreCost: Res
+    clayCost: Res
+    obsCost: Res
+    geodeCost: Res
+    maxOre: uint16
+    maxClay: uint16
+    maxObs: uint16
+
+const
+  OreBot = Res(ore: 1)
+  ClayBot = Res(clay: 1)
+  ObsBot = Res(obs: 1)
+  GeodeBot = Res(geode: 1)
+
+func `<=`(a, b: Res): bool =
+  a.ore <= b.ore and a.clay <= b.clay and a.obs <= b.obs and a.geode <= b.geode
+
+func `+`(a, b: Res): Res =
+  Res(ore: a.ore + b.ore, clay: a.clay + b.clay, obs: a.obs + b.obs, geode: a.geode + b.geode)
+
+func `-`(a, b: Res): Res =
+  Res(ore: a.ore - b.ore, clay: a.clay - b.clay, obs: a.obs - b.obs, geode: a.geode - b.geode)
+
+func `+=`(a: var Res, b: Res) =
+  a.ore += b.ore
+  a.clay += b.clay
+  a.obs += b.obs
+  a.geode += b.geode
 
 proc blueprints(input: string): seq[Blueprint] =
   for line in input.splitLines:
-    var b = Blueprint()
-    var costs: array[4, array[4, int]]
-    # 0 = geode, 1 = obsidian, 2 = clay , 3 = ore
-    doAssert line.scanf(tmpl, b.num, costs[3][3], costs[2][3],
-                        costs[1][3], costs[1][2],
-                        costs[0][3], costs[0][1])
-    for i, row in costs:
-      b.costs[i] = mm_setr_epi32(costs[i][0].int32, costs[i][1].int32, costs[i][2].int32, costs[i][3].int32)
-    b.maxCosts = b.costs.foldl(mm_max_epi32(a, b))
-    result.add b
+    var num, oreBotOre, clayBotOre, obsBotOre, obsBotClay, geodeBotOre, geodeBotObs: int
+    doAssert line.scanf(tmpl, num, oreBotOre, clayBotOre, obsBotOre,
+                        obsBotClay, geodeBotOre, geodeBotObs)
+    result.add Blueprint(
+      num: num,
+      oreCost: Res(ore: uint16(oreBotOre)),
+      clayCost: Res(ore: uint16(clayBotOre)),
+      obsCost: Res(ore: uint16(obsBotOre), clay: uint16(obsBotClay)),
+      geodeCost: Res(ore: uint16(geodeBotOre), obs: uint16(geodeBotObs)),
+      maxOre: uint16(max([oreBotOre, clayBotOre, obsBotOre, geodeBotOre])),
+      maxClay: uint16(obsBotClay),
+      maxObs: uint16(geodeBotObs),
+    )
 
-proc `|>=|`(a, b: M128i): bool = mm_movemask_epi8(mm_cmplt_epi32(a, b)) == 0
+proc upperBd(b: Blueprint, time: uint16, amts, bots: Res): uint16
+proc makeBot(b: Blueprint, mx: var uint16, time: uint16, amts, bots, newBot, cost: Res)
 
-proc `|+|`(a, b: M128i): M128i = mm_add_epi32(a, b)
+proc dfs(b: Blueprint, maxGeode: var uint16, time: uint16, amts, bots: Res) =
+  maxGeode = max(maxGeode, amts.geode + time * bots.geode)
+  if b.upperBd(time, amts, bots) <= maxGeode:
+    return
 
-proc `|-|`(a, b: M128i): M128i = mm_sub_epi32(a, b)
+  if bots.obs > 0 and time > 1:
+    b.makeBot(maxGeode, time, amts, bots, GeodeBot, b.geodeCost)
+  if bots.obs < b.maxObs and bots.clay > 0 and time > 3:
+    b.makeBot(maxGeode, time, amts, bots, ObsBot, b.obsCost)
+  if bots.ore < b.maxOre and time > 3:
+    b.makeBot(maxGeode, time, amts, bots, OreBot, b.oreCost)
+  if bots.clay < b.maxClay and time > 5:
+    b.makeBot(maxGeode, time, amts, bots, ClayBot, b.clayCost)
 
-proc `[]`(m: M128i, i: int): int32 = cast[array[4, int32]](m)[i]
+proc upperBd(b: Blueprint, time: uint16, amts, bots: Res): uint16 =
+  var amts = amts
+  var bots = bots
+  for i in 1'u16 .. time:
+    amts.ore = b.maxOre
+    if b.geodeCost <= amts:
+      amts += bots - b.geodeCost
+      bots += GeodeBot
+    elif b.obsCost <= amts:
+      amts += bots - b.obsCost
+      bots += ObsBot
+    else:
+      amts += bots
+    bots += ClayBot
+  amts.geode
 
-proc sim(b: Blueprint, t: int): int32 =
-  proc dfs(res: var int32, time: int, amts, bots: M128i, bans: uint8) =
-    let geodes = amts[0]
-    let geodeBots = bots[0]
-    if time == 0:
-      res = max(res, geodes)
-      return
-    var upperBd = geodes + time*geodeBots
-    var (obs, obsRate, obsCost) = (amts[1], bots[1], b.costs[0][1])
-    for t in countdown(time-1, 0):
-      if obs >= obsCost:
-        obs += obsRate - obsCost
-        upperBd += t
-      else:
-        obs += obsRate
-        obsRate += 1
-    if upperBd <= res:
-      return
-    var bans = bans
-    for i, costs in b.costs:
-      if (bans and (1'u8 shl i)) == 0 and (i == 0 or bots[i] < b.maxCosts[i]) and amts |>=| costs:
-        var chans = [0'i32, 0, 0, 0]
-        chans[i] = 1
-        let bots2 = mm_setr_epi32(chans[0], chans[1], chans[2], chans[3])
-        res.dfs(time - 1, amts |+| bots |-| costs, bots |+| bots2, 0)
-        bans = bans or (1'u8 shl i)
-    res.dfs(time - 1, amts |+| bots, bots, bans)
-  result.dfs(t, mm_setzero_si128(), mm_setr_epi32(0, 0, 0, 1), 0)
+proc makeBot(b: Blueprint, mx: var uint16, time: uint16, amts, bots, newBot, cost: Res) =
+  var amts = amts
+  for t in 1'u16 ..< time:
+    if cost <= amts:
+      b.dfs(mx, time - t, amts + bots - cost, bots + newBot)
+      break
+    amts += bots
+
+proc sim(b: Blueprint, time: uint16): int =
+  var res: uint16
+  b.dfs(res, time, Res(), OreBot)
+  res.int
 
 proc part1*(input: string): int =
   for b in input.blueprints:
