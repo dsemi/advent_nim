@@ -1,4 +1,4 @@
-import md5
+import checksums/md5
 import strutils
 import threadpool
 

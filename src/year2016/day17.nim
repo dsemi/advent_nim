@@ -1,5 +1,5 @@
+import checksums/md5
 import deques
-import md5
 import sequtils
 import sets
 
