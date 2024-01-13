@@ -58,23 +58,6 @@ proc blueprints(input: string): seq[Blueprint] =
       maxObs: uint16(geodeBotObs),
     )
 
-proc upperBd(b: Blueprint, time: uint16, amts, bots: Res): uint16
-proc makeBot(b: Blueprint, mx: var uint16, time: uint16, amts, bots, newBot, cost: Res)
-
-proc dfs(b: Blueprint, maxGeode: var uint16, time: uint16, amts, bots: Res) =
-  maxGeode = max(maxGeode, amts.geode + time * bots.geode)
-  if b.upperBd(time, amts, bots) <= maxGeode:
-    return
-
-  if bots.obs > 0 and time > 1:
-    b.makeBot(maxGeode, time, amts, bots, GeodeBot, b.geodeCost)
-  if bots.obs < b.maxObs and bots.clay > 0 and time > 3:
-    b.makeBot(maxGeode, time, amts, bots, ObsBot, b.obsCost)
-  if bots.ore < b.maxOre and time > 3:
-    b.makeBot(maxGeode, time, amts, bots, OreBot, b.oreCost)
-  if bots.clay < b.maxClay and time > 5:
-    b.makeBot(maxGeode, time, amts, bots, ClayBot, b.clayCost)
-
 proc upperBd(b: Blueprint, time: uint16, amts, bots: Res): uint16 =
   var amts = amts
   var bots = bots
@@ -90,6 +73,22 @@ proc upperBd(b: Blueprint, time: uint16, amts, bots: Res): uint16 =
       amts += bots
     bots += ClayBot
   amts.geode
+
+proc makeBot(b: Blueprint, mx: var uint16, time: uint16, amts, bots, newBot, cost: Res)
+
+proc dfs(b: Blueprint, maxGeode: var uint16, time: uint16, amts, bots: Res) =
+  maxGeode = max(maxGeode, amts.geode + time * bots.geode)
+  if b.upperBd(time, amts, bots) <= maxGeode:
+    return
+
+  if bots.obs > 0 and time > 1:
+    b.makeBot(maxGeode, time, amts, bots, GeodeBot, b.geodeCost)
+  if bots.obs < b.maxObs and bots.clay > 0 and time > 3:
+    b.makeBot(maxGeode, time, amts, bots, ObsBot, b.obsCost)
+  if bots.ore < b.maxOre and time > 3:
+    b.makeBot(maxGeode, time, amts, bots, OreBot, b.oreCost)
+  if bots.clay < b.maxClay and time > 5:
+    b.makeBot(maxGeode, time, amts, bots, ClayBot, b.clayCost)
 
 proc makeBot(b: Blueprint, mx: var uint16, time: uint16, amts, bots, newBot, cost: Res) =
   var amts = amts
