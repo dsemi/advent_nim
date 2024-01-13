@@ -1,4 +1,3 @@
-import sequtils
 import strscans
 import strutils
 
