@@ -91,7 +91,7 @@ proc availableMoves(m: ref Maze, pos: Coord): seq[(int, Coord)] =
 
 proc part1*(input: string): int =
   let (maze, start, done) = input.parseMaze
-  for d, st in dijkstra(start, p => maze.availableMoves(p)):
+  for d, st in dijkstra(start, proc(p: Coord): seq[(int, Coord)] = maze.availableMoves(p)):
     if st == done:
       return d
 
