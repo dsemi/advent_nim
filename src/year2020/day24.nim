@@ -46,6 +46,7 @@ proc part2*(input: string): int =
   var grid = newSeqWith(maxY+steps+2, newSeq[bool](maxX+steps+2))
   for tile in tiles:
     grid[tile[1] + yOffset][tile[0] + xOffset] = true
+  # Switch to 1d and deepcopy wouldn't be required.
   var grid2: seq[seq[bool]]
   deepcopy(grid2, grid)
   for _ in 1..steps:
