@@ -2,47 +2,73 @@ import fusion/matching
 import sequtils
 import strutils
 import sugar
+import std/bitops
+import std/enumerate
+import std/packedsets
 
 type
-  Pipe = ref object
-    a: int
-    b: int
-    used: bool
+  Pipe = object
+    id: uint8
+    a: uint32
+    b: uint32
 
-  Builder[T] = ref object
-    a: seq[seq[Pipe]]
-    b: seq[seq[Pipe]]
-    f: proc(x: T, y: Pipe): T
+  Bridge = object
+    len: int
+    strength: uint32
+    port: uint32
+    used: uint64
 
-proc parsePipes(input: string): (seq[Pipe], int) =
-  for line in input.splitLines:
+proc parsePipes(input: string): seq[Pipe] =
+  for i, line in enumerate(0'u8, input.splitLines):
     [@a, @b] := line.split('/').map(parseInt)
-    result[0].add(Pipe(a: a, b: b))
-    result[1] = max(result[1], max(a, b))
+    result.add Pipe(id: i, a: uint32(a), b: uint32(b))
 
-proc build[T](b: Builder[T], port: int, curr: T): T =
-  result = curr
-  template run(x: untyped): untyped =
-    for pipe in x[port].mitems:
-      if not pipe.used:
-        pipe.used = true
-        result = max(result, b.build(pipe.a + pipe.b - port, b.f(curr, pipe)))
-        pipe.used = false
-  run(b.a)
-  run(b.b)
+proc fuse(b: Bridge, p: Pipe): Bridge =
+  result = b
+  inc result.len
+  result.strength += p.a + p.b
+  result.port = p.a + p.b - b.port
+  result.used.setBit(p.id)
 
-proc solve[T](input: string, start: T, step: (T, Pipe) -> T): T =
-  let (pipes, mx) = input.parsePipes
-  var a = newSeqWith(mx + 1, newSeq[Pipe]())
-  var b = newSeqWith(mx + 1, newSeq[Pipe]())
+proc build[T](b: Bridge, key: (Bridge) -> T, neighbs: seq[seq[Pipe]], unusedSingles: var seq[int], visited: var PackedSet[uint64]): Bridge =
+  var b = b
+  if visited.containsOrIncl(b.used):
+    return
+  let port = b.port
+  var singleIdx = none(uint32)
+  if unusedSingles[port] > 0:
+    singleIdx = some(port)
+    dec unusedSingles[port]
+    inc b.len
+    b.strength += 2 * port
+  result = b
+  for p in neighbs[port]:
+    if not b.used.testBit(p.id):
+      let neighb = b.fuse(p).build(key, neighbs, unusedSingles, visited)
+      if key(neighb) > key(result):
+        result = neighb
+  if singleIdx.isSome:
+    inc unusedSingles[singleIdx.unsafeGet]
+
+proc solve[T](input: string, key: (Bridge) -> T): uint32 =
+  let pipes = input.parsePipes
+  var mx: uint32
+  for p in pipes:
+    mx = max(mx, p.a)
+    mx = max(mx, p.b)
+  var neighbs = newSeqWith(int(mx) + 1, newSeq[Pipe]())
+  var singles = newSeq[int](mx + 1)
   for pipe in pipes:
-    a[pipe.a].add(pipe)
     if pipe.a != pipe.b:
-      b[pipe.b].add(pipe)
-  Builder[T](a: a, b: b, f: step).build(0, start)
+      neighbs[pipe.a].add(pipe)
+      neighbs[pipe.b].add(pipe)
+    else:
+      inc singles[pipe.a]
+  var ints: PackedSet[uint64]
+  Bridge().build(key, neighbs, singles, ints).strength
 
-proc part1*(input: string): int =
-  input.solve(0, (s, p) => s + p.a + p.b)
+proc part1*(input: string): uint32 =
+  input.solve((b) => b.strength)
 
-proc part2*(input: string): int =
-  input.solve((0, 0), (s, p) => (s[0] + 1, s[1] + p.a + p.b))[1]
+proc part2*(input: string): uint32 =
+  input.solve((b) => (b.len, b.strength))
