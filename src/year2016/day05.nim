@@ -1,50 +1,82 @@
+import std/algorithm
 import checksums/md5
-import strutils
-import threadpool
+import std/cpuinfo
+import std/locks
+import std/strutils
+import threading/atomics
 
-const
-  largeBatchSize = 8
-  batchSize = 64000
+const batchSize = 8000
 
-proc helper(seed: string, start: int): seq[uint8] =
-  for i in start .. start + batchSize:
-    let h = (seed & $i).toMD5
-    if h[0] == 0 and h[1] == 0 and h[2] < 16:
-      result.add(h[2])
+type Shared = object
+  prefix: string
+  last: Atomic[uint32]
+  counter: Atomic[uint32]
+  lock: Lock
+  finishedAt: seq[uint32]
+  sol: seq[uint8]
+
+proc worker(s: ptr Shared) {.thread.} =
+  while true:
+    let offset = s[].counter.fetchAdd(batchSize, Relaxed)
+    if offset > s[].last.load(Relaxed):
+      break
+    for n in 0'u32 ..< batchSize:
+      let i = offset + n
+      let h = (s[].prefix & $i).toMD5
+      if h[0] == 0 and h[1] == 0 and h[2] < 16:
+        s[].lock.withLock:
+          var idx = s[].finishedAt.upperBound(i)
+          if idx >= 8:
+            break
+          s[].finishedAt.insert(i, idx)
+          s[].sol.insert(h[2], idx)
+          if s[].sol.len == 8:
+            s[].last.store(s[].finishedAt[7])
 
 proc part1*(input: string): string =
-  var
-    res: array[8, string]
-    j = 0
-  for sz in countup(0, int.high, largeBatchSize * batchSize):
-    var arr = newSeq[FlowVar[seq[uint8]]](largeBatchSize)
-    for i in 0 .. arr.high:
-      arr[i] = spawn helper(input, sz + i * batchSize)
-    for grp in arr:
-      for x in ^grp:
-        res[j] = toHex(x.uint, 1).toLowerAscii
-        inc j
-        if j == 8:
-          return res.join
+  var s = Shared(prefix: input)
+  s.last.store(uint32.high)
+  var thrs = newSeq[Thread[ptr Shared]](countProcessors())
+  for i in 0..thrs.high:
+    createThread(thrs[i], worker, addr s)
+  joinThreads(thrs)
+  for c in s.sol:
+    result.add toHex(c, 1).toLowerAscii
 
-proc helper2(seed: string, start: int): seq[(uint8, uint8)] =
-  for i in start .. start + batchSize:
-    let h = (seed & $i).toMD5
-    if h[0] == 0 and h[1] == 0 and h[2] < 8:
-      result.add((h[2], h[3] shr 4))
+type Shared2 = object
+  prefix: string
+  last: Atomic[uint32]
+  counter: Atomic[uint32]
+  lock: Lock
+  complete: set[0..7]
+  finishedAt: array[8, uint32]
+  sol: array[8, uint8]
+
+proc worker2(s: ptr Shared2) {.thread.} =
+  while true:
+    let offset = s[].counter.fetchAdd(batchSize, Relaxed)
+    if offset > s[].last.load(Relaxed):
+      break
+    for n in 0'u32 ..< batchSize:
+      let i = offset + n
+      let h = (s[].prefix & $i).toMD5
+      if h[0] == 0 and h[1] == 0 and h[2] < 8:
+        var idx = h[2]
+        var curr = h[3] shr 4
+        s[].lock.withLock:
+          if s[].finishedAt[idx] == 0 or s[].finishedAt[idx] > i:
+            s[].finishedAt[idx] = i
+            s[].sol[idx] = curr
+            s[].complete.incl(idx)
+            if s[].complete.card == 8:
+              s[].last.store(i)
 
 proc part2*(input: string): string =
-  var
-    res: array[8, string]
-    j = 0
-  for sz in countup(0, int.high, largeBatchSize * batchSize):
-    var arr = newSeq[FlowVar[seq[(uint8, uint8)]]](largeBatchSize)
-    for i in 0 .. arr.high:
-      arr[i] = spawn helper2(input, sz + i * batchSize)
-    for grp in arr:
-      for (n, c) in ^grp:
-        if res[n] == "":
-          res[n] = toHex(c.uint, 1).toLowerAscii
-          inc j
-          if j == 8:
-            return res.join
+  var s = Shared2(prefix: input)
+  s.last.store(uint32.high)
+  var thrs = newSeq[Thread[ptr Shared2]](countProcessors())
+  for i in 0..thrs.high:
+    createThread(thrs[i], worker2, addr s)
+  joinThreads(thrs)
+  for c in s.sol:
+    result.add toHex(c, 1).toLowerAscii
