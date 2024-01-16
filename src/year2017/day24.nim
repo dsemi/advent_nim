@@ -1,10 +1,10 @@
 import fusion/matching
-import sequtils
-import strutils
-import sugar
 import std/bitops
 import std/enumerate
 import std/packedsets
+import std/sequtils
+import std/strutils
+import std/sugar
 
 type
   Pipe = object
@@ -35,9 +35,9 @@ proc build[T](b: Bridge, key: (Bridge) -> T, neighbs: seq[seq[Pipe]], unusedSing
   if visited.containsOrIncl(b.used):
     return
   let port = b.port
-  var singleIdx = none(uint32)
+  var singleIdx = -1
   if unusedSingles[port] > 0:
-    singleIdx = some(port)
+    singleIdx = int(port)
     dec unusedSingles[port]
     inc b.len
     b.strength += 2 * port
@@ -47,8 +47,8 @@ proc build[T](b: Bridge, key: (Bridge) -> T, neighbs: seq[seq[Pipe]], unusedSing
       let neighb = b.fuse(p).build(key, neighbs, unusedSingles, visited)
       if key(neighb) > key(result):
         result = neighb
-  if singleIdx.isSome:
-    inc unusedSingles[singleIdx.unsafeGet]
+  if singleIdx >= 0:
+    inc unusedSingles[singleIdx]
 
 proc solve[T](input: string, key: (Bridge) -> T): uint32 =
   let pipes = input.parsePipes
