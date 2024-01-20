@@ -376,3 +376,33 @@ proc partitionPoint*[T](xs: openArray[T], pred: proc(x: T): bool): int =
       right = mid
     size = right - left
   left
+
+type Grid*[T] = object
+  rows*: int
+  cols*: int
+  elems*: seq[T]
+
+proc toGrid*(input: string): Grid[char] =
+  var elems = newSeq[char]()
+  var c = 0
+  var cols = 0
+  for b in input:
+    if b == '\n':
+      if cols == 0:
+        cols = c
+      doAssert c == 0 or c == cols
+      c = 0
+    else:
+      elems.add b
+      inc c
+  Grid[char](rows: elems.len div cols,
+             cols: cols,
+             elems: elems)
+
+proc shoelace*(pts: seq[Coord]): int =
+  for i in 0 ..< pts.high:
+    result += (pts[i].y + pts[i+1].y) * (pts[i+1].x - pts[i].x)
+  result = result.abs div 2
+
+proc picksInterior*(area: int, boundary: int): int =
+  area + 1 - boundary div 2
